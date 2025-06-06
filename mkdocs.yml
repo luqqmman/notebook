@@ -1,5 +1,3 @@
 site_name: ML journey
 nav:
   - Home: index.md
-theme:
-  name: material 
