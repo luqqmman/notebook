@@ -4,7 +4,6 @@ This is an exercise inspired from "An Introduction to Statistical Learning" book
 2. Comparing regular least square, ridge, and lasso to model the previously selected coefficient
 3. Try reducing training data and increase the number of parameter to see the regularization in action
 
-
 ```python
 import numpy as np
 import pandas as pd
@@ -18,7 +17,6 @@ from sklearn.metrics import r2_score as R2, mean_squared_error as MSE
 ## 1. Here we create Y = c1x + c2x^2 + c3x^3 + noise
 We choose c1 = 0.1, c2 = 0.2, and c3 = -7
 
-
 ```python
 np.random.seed(0)
 x = np.random.uniform(-3, 3, size=100)
@@ -31,36 +29,22 @@ Y = np.dot(theta, X) + noise
 X_train, X_test, y_train, y_test = skm.train_test_split(X.T, Y, test_size=0.2)
 ```
 
-
 ```python
 fig, ax = subplots()
 ax.scatter(x, Y)
 ```
 
-
-
-
     <matplotlib.collections.PathCollection at 0x71ea3592b7a0>
-
-
-
-
     
 ![png](Regularization%20with%20Lasso%20and%20Ridge_files/Regularization%20with%20Lasso%20and%20Ridge_4_1.png)
-    
-
 
 ## Next we fit linear regression, ridge, and lasso.
 for ridge and lasso we do cross validation to determine best regularization parameter (alphas). We cross validate 50 alphas ranging from 10^-4 to 10^8. We also create error bar for each alphas and see the error std from 5-fold CV models.
-
 
 ```python
 lr = skl.LinearRegression()
 lr.fit(X_train, y_train)
 ```
-
-
-
 
 <style>#sk-container-id-4 {
   /* Definition of color scheme common for light and dark mode */
@@ -191,7 +175,6 @@ div.sk-item {
   padding-right: 1em;
   padding-left: 1em;
 }
-
 
 /* Toggleable style: style used for estimator/Pipeline/ColumnTransformer box that is
 clickable and can be expanded/collapsed.
@@ -479,17 +462,11 @@ div.sk-label-container:hover .sk-estimator-doc-link.fitted:hover,
 }
 </style><div id="sk-container-id-4" class="sk-top-container"><div class="sk-text-repr-fallback"><pre>LinearRegression()</pre><b>In a Jupyter environment, please rerun this cell to show the HTML representation or trust the notebook. <br />On GitHub, the HTML representation is unable to render, please try loading this page with nbviewer.org.</b></div><div class="sk-container" hidden><div class="sk-item"><div class="sk-estimator fitted sk-toggleable"><input class="sk-toggleable__control sk-hidden--visually" id="sk-estimator-id-4" type="checkbox" checked><label for="sk-estimator-id-4" class="sk-toggleable__label fitted sk-toggleable__label-arrow"><div><div>LinearRegression</div></div><div><a class="sk-estimator-doc-link fitted" rel="noreferrer" target="_blank" href="https://scikit-learn.org/1.6/modules/generated/sklearn.linear_model.LinearRegression.html">?<span>Documentation for LinearRegression</span></a><span class="sk-estimator-doc-link fitted">i<span>Fitted</span></span></div></label><div class="sk-toggleable__content fitted"><pre>LinearRegression()</pre></div> </div></div></div></div>
 
-
-
-
 ```python
 lambdas = 10**np.linspace(8, -4, 50)
 ridge = skl.RidgeCV(store_cv_results=True, alphas=lambdas)
 ridge.fit(X_train, y_train)
 ```
-
-
-
 
 <style>#sk-container-id-5 {
   /* Definition of color scheme common for light and dark mode */
@@ -620,7 +597,6 @@ div.sk-item {
   padding-right: 1em;
   padding-left: 1em;
 }
-
 
 /* Toggleable style: style used for estimator/Pipeline/ColumnTransformer box that is
 clickable and can be expanded/collapsed.
@@ -932,9 +908,6 @@ div.sk-label-container:hover .sk-estimator-doc-link.fitted:hover,
        1.75751062e-04, 1.00000000e-04]),
         store_cv_results=True)</pre></div> </div></div></div></div>
 
-
-
-
 ```python
 err = ridge.cv_results_.mean(0)
 
@@ -946,27 +919,14 @@ ax.errorbar(-np.log10(ridge.alphas), err, yerr=ridge.cv_results_.std(0)/np.sqrt(
 ax.axvline(-np.log10(ridge.alpha_), ls='--')
 ```
 
-
-
-
     <matplotlib.lines.Line2D at 0x71ea2c051310>
-
-
-
-
     
 ![png](Regularization%20with%20Lasso%20and%20Ridge_files/Regularization%20with%20Lasso%20and%20Ridge_8_1.png)
-    
-
-
 
 ```python
 lasso = skl.LassoCV(alphas=lambdas)
 lasso.fit(X_train, y_train)
 ```
-
-
-
 
 <style>#sk-container-id-7 {
   /* Definition of color scheme common for light and dark mode */
@@ -1097,7 +1057,6 @@ div.sk-item {
   padding-right: 1em;
   padding-left: 1em;
 }
-
 
 /* Toggleable style: style used for estimator/Pipeline/ColumnTransformer box that is
 clickable and can be expanded/collapsed.
@@ -1409,9 +1368,6 @@ div.sk-label-container:hover .sk-estimator-doc-link.fitted:hover,
        1.67683294e-03, 9.54095476e-04, 5.42867544e-04, 3.08884360e-04,
        1.75751062e-04, 1.00000000e-04]))</pre></div> </div></div></div></div>
 
-
-
-
 ```python
 err = lasso.mse_path_.mean(1)
 fig, ax = subplots()
@@ -1421,102 +1377,57 @@ ax.errorbar(-np.log10(lasso.alphas_), err, yerr=lasso.mse_path_.std(1)/np.sqrt(3
 ax.axvline(-np.log10(lasso.alpha_), ls='--')
 ```
 
-
-
-
     <matplotlib.lines.Line2D at 0x71ea2bcd7620>
-
-
-
-
     
 ![png](Regularization%20with%20Lasso%20and%20Ridge_files/Regularization%20with%20Lasso%20and%20Ridge_10_1.png)
-    
-
 
 ## Results
 - We see all the method doing well, with about 85% R2. Because the data are not linearly independent and there is enough training data (we use 80% of data), regularization is'nt actually needed here.
 - Lasso is the closest to selected coefficient. it also do variable selection and eliminate x1 and x2 as the previously selected coefficient are close to zero (0.1)
 
-
-
 ```python
 lr.coef_, ridge.coef_, lasso.coef_
 ```
-
-
-
 
     (array([-1.34480014, -1.42828863, -6.76290371]),
      array([-1.04400461, -1.01056116, -6.62594185]),
      array([-0.        , -0.        , -6.82785986]))
 
-
-
-
 ```python
 lr.intercept_, ridge.intercept_, lasso.intercept_
 ```
 
-
-
-
     (10.855330811482283, 9.743354531099754, 6.7171981562675445)
-
-
-
 
 ```python
 R2(lr.predict(X_test), y_test), R2(ridge.predict(X_test), y_test), R2(lasso.predict(X_test), y_test)
 ```
 
-
-
-
     (0.8585674738446629, 0.8492477120995332, 0.8531453072140727)
-
-
-
 
 ```python
 MSE(lr.predict(X_test), y_test), MSE(ridge.predict(X_test), y_test), MSE(lasso.predict(X_test), y_test)
 ```
 
-
-
-
     (709.4694629066079, 724.1507926668988, 734.2033857781576)
-
-
-
 
 ```python
 ridge.alpha_, lasso.alpha_
 ```
 
-
-
-
     (232.99518105153717, 13.894954943731388)
-
-
 
 ## 3. Reducing the training data to 5%
 We will try to see regularization in action with reducing training data
-
 
 ```python
 X_train, X_test, y_train, y_test = skm.train_test_split(X.T, Y, test_size=0.95, random_state=7)
 ```
 
-
 ```python
 lr = skl.LinearRegression()
 lr.fit(X_train, y_train)
 ```
-
-
-
 
 <style>#sk-container-id-45 {
   /* Definition of color scheme common for light and dark mode */
@@ -1647,7 +1558,6 @@ div.sk-item {
   padding-right: 1em;
   padding-left: 1em;
 }
-
 
 /* Toggleable style: style used for estimator/Pipeline/ColumnTransformer box that is
 clickable and can be expanded/collapsed.
@@ -1935,17 +1845,11 @@ div.sk-label-container:hover .sk-estimator-doc-link.fitted:hover,
 }
 </style><div id="sk-container-id-45" class="sk-top-container"><div class="sk-text-repr-fallback"><pre>LinearRegression()</pre><b>In a Jupyter environment, please rerun this cell to show the HTML representation or trust the notebook. <br />On GitHub, the HTML representation is unable to render, please try loading this page with nbviewer.org.</b></div><div class="sk-container" hidden><div class="sk-item"><div class="sk-estimator fitted sk-toggleable"><input class="sk-toggleable__control sk-hidden--visually" id="sk-estimator-id-45" type="checkbox" checked><label for="sk-estimator-id-45" class="sk-toggleable__label fitted sk-toggleable__label-arrow"><div><div>LinearRegression</div></div><div><a class="sk-estimator-doc-link fitted" rel="noreferrer" target="_blank" href="https://scikit-learn.org/1.6/modules/generated/sklearn.linear_model.LinearRegression.html">?<span>Documentation for LinearRegression</span></a><span class="sk-estimator-doc-link fitted">i<span>Fitted</span></span></div></label><div class="sk-toggleable__content fitted"><pre>LinearRegression()</pre></div> </div></div></div></div>
 
-
-
-
 ```python
 lambdas = 10**np.linspace(8, -4, 50)
 ridge = skl.RidgeCV(store_cv_results=True, alphas=lambdas)
 ridge.fit(X_train, y_train)
 ```
-
-
-
 
 <style>#sk-container-id-46 {
   /* Definition of color scheme common for light and dark mode */
@@ -2076,7 +1980,6 @@ div.sk-item {
   padding-right: 1em;
   padding-left: 1em;
 }
-
 
 /* Toggleable style: style used for estimator/Pipeline/ColumnTransformer box that is
 clickable and can be expanded/collapsed.
@@ -2388,9 +2291,6 @@ div.sk-label-container:hover .sk-estimator-doc-link.fitted:hover,
        1.75751062e-04, 1.00000000e-04]),
         store_cv_results=True)</pre></div> </div></div></div></div>
 
-
-
-
 ```python
 lasso = skl.LassoCV(alphas=lambdas)
 lasso.fit(X_train, y_train)
@@ -2414,10 +2314,6 @@ lasso.fit(X_train, y_train)
       model = cd_fast.enet_coordinate_descent_gram(
     /home/luqman/Lab/islp/venv/lib/python3.12/site-packages/sklearn/linear_model/_coordinate_descent.py:681: ConvergenceWarning: Objective did not converge. You might want to increase the number of iterations. Duality gap: 4.6001418198169475, tolerance: 2.840656590789062
       model = cd_fast.enet_coordinate_descent_gram(
-
-
-
-
 
 <style>#sk-container-id-47 {
   /* Definition of color scheme common for light and dark mode */
@@ -2548,7 +2444,6 @@ div.sk-item {
   padding-right: 1em;
   padding-left: 1em;
 }
-
 
 /* Toggleable style: style used for estimator/Pipeline/ColumnTransformer box that is
 clickable and can be expanded/collapsed.
@@ -2860,56 +2755,34 @@ div.sk-label-container:hover .sk-estimator-doc-link.fitted:hover,
        1.67683294e-03, 9.54095476e-04, 5.42867544e-04, 3.08884360e-04,
        1.75751062e-04, 1.00000000e-04]))</pre></div> </div></div></div></div>
 
-
-
 ## Regularization results
 - There is too much variance in this model because we only using 5 points to create a line with 3 variable.
 - Even linear regression model are to overfit for this extreme settings.
 - regularization help us to reduce a variance with tradeoff of some bias. Both ridge and lasso did pretty good with 70% R2.
 
-
 ```python
 R2(lr.predict(X_test), y_test), R2(ridge.predict(X_test), y_test), R2(lasso.predict(X_test), y_test)
 ```
 
-
-
-
     (0.3761038971902325, 0.716650314401583, 0.7400452801921802)
-
-
-
 
 ```python
 lr.coef_, ridge.coef_, lasso.coef_
 ```
 
-
-
-
     (array([-68.5520653 , -21.42043405,   1.78968729]),
      array([-11.68913854, -13.61503784,  -9.40388045]),
      array([ -0.        , -11.18693772, -11.5483712 ]))
-
-
-
 
 ```python
 ridge.alpha_, lasso.alpha_
 ```
 
-
-
-
     (0.8286427728546859, 4.498432668969444)
-
-
-
 
 ```python
 
 ```
-
 
 ```python
 

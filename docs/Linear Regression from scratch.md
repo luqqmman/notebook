@@ -6,25 +6,19 @@ from matplotlib import pyplot as plt
 from sklearn.datasets import fetch_california_housing
 ```
 
-
 ```python
 data = fetch_california_housing()
 ```
-
 
 ```python
 df = pd.DataFrame(data.data, columns=data.feature_names)
 df["Target"] = data.target
 ```
 
-
 ```python
 df = df.head(10000)
 df
 ```
-
-
-
 
 <div>
 <style scoped>
@@ -193,9 +187,6 @@ df
 <p>10000 rows × 9 columns</p>
 </div>
 
-
-
-
 ```python
 df.info()
 ```
@@ -217,14 +208,9 @@ df.info()
     dtypes: float64(9)
     memory usage: 703.3 KB
 
-
-
 ```python
 df.describe()
 ```
-
-
-
 
 <div>
 <style scoped>
@@ -356,33 +342,20 @@ df.describe()
 </table>
 </div>
 
-
-
-
 ```python
 sns.pairplot(df.head(1000), hue="Target", diag_kind="kde")
 plt.show()
 ```
-
-
     
 ![png](Linear%20Regression%20from%20scratch_files/Linear%20Regression%20from%20scratch_6_0.png)
-    
-
-
 
 ```python
 plt.figure(figsize=(10, 6))
 sns.heatmap(df.corr(), annot=True, cmap="coolwarm", fmt=".2f", linewidths=0.5)
 plt.show()
 ```
-
-
     
 ![png](Linear%20Regression%20from%20scratch_files/Linear%20Regression%20from%20scratch_7_0.png)
-    
-
-
 
 ```python
 class LinearRegression:
@@ -449,19 +422,16 @@ class LinearRegression:
         plt.show()
 ```
 
-
 ```python
 # X = df[["MedInc"]]
 X = df.drop(columns="Target")
 Y = df["Target"]
 ```
 
-
 ```python
 X = (X - X.mean()) / X.std()
 Y = (Y - Y.mean()) / Y.std()
 ```
-
 
 ```python
 train = X.index % 2 == 0
@@ -472,7 +442,6 @@ X_test = X[test]
 Y_test = Y[test]
 ```
 
-
 ```python
 X_train = np.array(X_train)
 Y_train = np.array(Y_train)
@@ -480,11 +449,9 @@ X_test = np.array(X_test)
 Y_test = np.array(Y_test)
 ```
 
-
 ```python
 model = LinearRegression(0.1)
 ```
-
 
 ```python
 model.closed_form_fit(X_train, Y_train)
@@ -495,14 +462,8 @@ model.residual_plot(X_test, Y_test)
 
     0.41151109506529826
     0.6059167915575893
-
-
-
     
 ![png](Linear%20Regression%20from%20scratch_files/Linear%20Regression%20from%20scratch_14_1.png)
-    
-
-
 
 ```python
 model.gradient_fit(X_train, Y_train)
@@ -513,8 +474,6 @@ print(model.score(X_train, Y_train))
 
     0.43518215741620114
     0.5710105260707274
-
-
 
 ```python
 

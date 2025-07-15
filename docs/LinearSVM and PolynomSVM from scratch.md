@@ -1,7 +1,6 @@
 # Linear and Polynom SVM from scratch
 We will create SVM using the loss function and do the gradient descend manually
 
-
 ```python
 import numpy as np
 import pandas as pd
@@ -10,7 +9,6 @@ from matplotlib import pyplot as plt
 from sklearn.model_selection import train_test_split
 ```
 
-
 ```python
 df = pd.read_csv("dataset/Iris.csv", index_col="Id")
 ```
@@ -18,24 +16,17 @@ df = pd.read_csv("dataset/Iris.csv", index_col="Id")
 ## We use the iris dataset 
 But to make things simple we only classify is it iris setosa or not, because iris versicolor and iris virginica is'nt linearly separable
 
-
 ```python
 sns.pairplot(df, hue="Species")
 plt.show()
 ```
-
-
     
 ![png](LinearSVM%20and%20PolynomSVM%20from%20scratch_files/LinearSVM%20and%20PolynomSVM%20from%20scratch_4_0.png)
-    
-
-
 
 ```python
 x = np.array(df.drop(columns=["Species", "SepalLengthCm", "SepalWidthCm"]))
 y = np.array([s == 'Iris-setosa' for s in df["Species"]])
 ```
-
 
 ```python
 from sklearn.preprocessing import StandardScaler
@@ -44,7 +35,6 @@ X_train, X_test, Y_train, Y_test = train_test_split(x, y, stratify=y, random_sta
 # scaler = StandardScaler()
 # X_train = scaler.fit_transform(X_train)
 ```
-
 
 ```python
 def perceptron(lx, ly, maxiter=1000):
@@ -67,11 +57,9 @@ def perceptron(lx, ly, maxiter=1000):
     return theta_0, theta
 ```
 
-
 ```python
 theta_0, theta = perceptron(X_train, Y_train)
 ```
-
 
 ```python
 count = 0
@@ -82,47 +70,27 @@ for x, y in zip(X_test, Y_test):
     count += ((z < 0) and not y)
 ```
 
-
 ```python
 count/len(Y_test)
 ```
 
-
-
-
     0.5263157894736842
-
-
-
 
 ```python
 theta
 ```
 
-
-
-
     array([-0.1, -2.2])
-
-
-
 
 ```python
 theta_0
 ```
 
-
-
-
     5
-
-
-
 
 ```python
 
 ```
-
 
 ```python
 class LinearSVM:
@@ -203,35 +171,21 @@ class LinearSVM:
 
 ```
 
-
 ```python
 s = LinearSVM(X_train, Y_train)
 ```
-
 
 ```python
 s.train()
 ```
 
-
-
-
     (-0.8530000000000006, array([-0.83165633, -0.66812085]))
-
-
-
 
 ```python
 s.predict(X_test, Y_test)
 ```
 
-
-
-
     np.float64(1.0)
-
-
-
 
 ```python
 s.plot()
@@ -241,14 +195,8 @@ s.plot()
       plt.plot(x1, x2_upper, 'k--', label='Margin Boundary', color="red")
     /tmp/ipykernel_4050/4131259921.py:69: UserWarning: color is redundantly defined by the 'color' keyword argument and the fmt string "k--" (-> color='k'). The keyword argument will take precedence.
       plt.plot(x1, x2_lower, 'k--', color="red")
-
-
-
     
 ![png](LinearSVM%20and%20PolynomSVM%20from%20scratch_files/LinearSVM%20and%20PolynomSVM%20from%20scratch_18_1.png)
-    
-
-
 
 ```python
 import numpy as np
@@ -312,36 +260,23 @@ class PolynomSVM:
         plt.show()
 ```
 
-
 ```python
 s = PolynomSVM(X_train, Y_train)
 ```
-
 
 ```python
 s.train()
 ```
 
-
-
-
     (-0.8980000000000007,
      array([-0.29973561, -0.27545061,  0.1579069 ,  0.10840018,  0.19147607,
             -0.00051781]))
 
-
-
-
 ```python
 s.plot()
 ```
-
-
     
 ![png](LinearSVM%20and%20PolynomSVM%20from%20scratch_files/LinearSVM%20and%20PolynomSVM%20from%20scratch_22_0.png)
-    
-
-
 
 ```python
 s.predict(X_test, Y_test)
@@ -350,10 +285,5 @@ s.predict(X_test, Y_test)
     13
     38
 
-
-
-
-
     np.float64(1.0)
-
 

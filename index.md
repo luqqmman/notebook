@@ -1,2 +1,21 @@
-# Muhammad Luqman Hakim
-Computer science student with interest in machine learning. Passionate about leveraging analytical skills to solve real-world problems and eager to grow alongside innovative teams. 
+# 👋 Muhammad Luqman Hakim
+
+🎓 Computer Science Student | 🤖 Machine Learning Enthusiast  
+📍 IPB University | 💡 Lifelong Learner  
+
+---
+
+Welcome to my Machine Learning Journey — a space where I document the projects, lessons, and experiments I've explored as I deepen my understanding of data-driven systems.
+
+My focus lies in:
+- Building intelligent systems using neural networks and deep learning.
+- Solving real-world problems with predictive models.
+- Bridging theory and practice through hands-on experimentation.
+
+---
+
+## 🔍 Highlights
+- 📈 Applied time series models for financial data forecasting.
+- 📝 Conducted sentiment analysis using NLP and TF-IDF/Embeddings.
+- 🧠 Built Simple Machine Learning but using Neural Network.
+
