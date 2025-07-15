@@ -20,7 +20,7 @@
     
     
       
-        <title>Regularization with Lasso and Ridge - ML Journey — Muhammad Luqman Hakim</title>
+        <title>z ISLP demo4 - ML Journey — Muhammad Luqman Hakim</title>
       
     
     
@@ -71,11 +71,6 @@
     <label class="md-overlay" for="__drawer"></label>
     <div data-md-component="skip">
       
-        
-        <a href="#regularization-with-lasso-and-ridge" class="md-skip">
-          Skip to content
-        </a>
-      
     </div>
     <div data-md-component="announce">
       
@@ -106,7 +101,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Regularization with Lasso and Ridge
+              z ISLP demo4
             
           </span>
         </div>
@@ -317,61 +312,6 @@
   
   
   
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#1-here-we-create-y-c1x-c2x2-c3x3-noise" class="md-nav__link">
-    <span class="md-ellipsis">
-      1. Here we create Y = c1x + c2x^2 + c3x^3 + noise
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#next-we-fit-linear-regression-ridge-and-lasso" class="md-nav__link">
-    <span class="md-ellipsis">
-      Next we fit linear regression, ridge, and lasso.
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#results" class="md-nav__link">
-    <span class="md-ellipsis">
-      Results
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#3-reducing-the-training-data-to-5" class="md-nav__link">
-    <span class="md-ellipsis">
-      3. Reducing the training data to 5%
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#regularization-results" class="md-nav__link">
-    <span class="md-ellipsis">
-      Regularization results
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
   
 </nav>
                   </div>
@@ -387,41 +327,541 @@
 
 
 
-<h1 id="regularization-with-lasso-and-ridge">Regularization with Lasso and Ridge</h1>
-<p>This is an exercise inspired from "An Introduction to Statistical Learning" book on section 6 problem 8.
-1. First we will create our own data with uniform distribution and select our own coefficient Y = c1x + c2x^2 + c3x^3 + noise
-2. Comparing regular least square, ridge, and lasso to model the previously selected coefficient
-3. Try reducing training data and increase the number of parameter to see the regularization in action</p>
-<pre><code class="language-python">import numpy as np
-import pandas as pd
+  <h1>z ISLP demo4</h1>
 
+<pre><code class="language-python">import pandas as pd
+import numpy as np
 from matplotlib.pyplot import subplots
-import sklearn.linear_model as skl
-import sklearn.model_selection as skm
-from sklearn.metrics import r2_score as R2, mean_squared_error as MSE
+import statsmodels.api as sm
+from ISLP import load_data
+from ISLP.models import (ModelSpec as MS, summarize)
 </code></pre>
-<h2 id="1-here-we-create-y-c1x-c2x2-c3x3-noise">1. Here we create Y = c1x + c2x^2 + c3x^3 + noise</h2>
-<p>We choose c1 = 0.1, c2 = 0.2, and c3 = -7</p>
-<pre><code class="language-python">np.random.seed(0)
-x = np.random.uniform(-3, 3, size=100)
-X = np.array([x, x**2, x**3])
+<pre><code class="language-python">from ISLP import confusion_table
+from ISLP.models import contrast
+from sklearn.discriminant_analysis import \
+(LinearDiscriminantAnalysis as LDA ,
+QuadraticDiscriminantAnalysis as QDA)
+from sklearn.naive_bayes import GaussianNB
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.preprocessing import StandardScaler
+from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LogisticRegression
+</code></pre>
+<pre><code class="language-python">Smarket = load_data('Smarket')
+Smarket
+</code></pre>
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
 
-theta = np.array([0.1, 0.1, -7])
-noise = np.random.normal(scale=30, size=100)
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
 
-Y = np.dot(theta, X) + noise
-X_train, X_test, y_train, y_test = skm.train_test_split(X.T, Y, test_size=0.2)
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>Year</th>
+      <th>Lag1</th>
+      <th>Lag2</th>
+      <th>Lag3</th>
+      <th>Lag4</th>
+      <th>Lag5</th>
+      <th>Volume</th>
+      <th>Today</th>
+      <th>Direction</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>2001</td>
+      <td>0.381</td>
+      <td>-0.192</td>
+      <td>-2.624</td>
+      <td>-1.055</td>
+      <td>5.010</td>
+      <td>1.19130</td>
+      <td>0.959</td>
+      <td>Up</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>2001</td>
+      <td>0.959</td>
+      <td>0.381</td>
+      <td>-0.192</td>
+      <td>-2.624</td>
+      <td>-1.055</td>
+      <td>1.29650</td>
+      <td>1.032</td>
+      <td>Up</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>2001</td>
+      <td>1.032</td>
+      <td>0.959</td>
+      <td>0.381</td>
+      <td>-0.192</td>
+      <td>-2.624</td>
+      <td>1.41120</td>
+      <td>-0.623</td>
+      <td>Down</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>2001</td>
+      <td>-0.623</td>
+      <td>1.032</td>
+      <td>0.959</td>
+      <td>0.381</td>
+      <td>-0.192</td>
+      <td>1.27600</td>
+      <td>0.614</td>
+      <td>Up</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>2001</td>
+      <td>0.614</td>
+      <td>-0.623</td>
+      <td>1.032</td>
+      <td>0.959</td>
+      <td>0.381</td>
+      <td>1.20570</td>
+      <td>0.213</td>
+      <td>Up</td>
+    </tr>
+    <tr>
+      <th>...</th>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+    </tr>
+    <tr>
+      <th>1245</th>
+      <td>2005</td>
+      <td>0.422</td>
+      <td>0.252</td>
+      <td>-0.024</td>
+      <td>-0.584</td>
+      <td>-0.285</td>
+      <td>1.88850</td>
+      <td>0.043</td>
+      <td>Up</td>
+    </tr>
+    <tr>
+      <th>1246</th>
+      <td>2005</td>
+      <td>0.043</td>
+      <td>0.422</td>
+      <td>0.252</td>
+      <td>-0.024</td>
+      <td>-0.584</td>
+      <td>1.28581</td>
+      <td>-0.955</td>
+      <td>Down</td>
+    </tr>
+    <tr>
+      <th>1247</th>
+      <td>2005</td>
+      <td>-0.955</td>
+      <td>0.043</td>
+      <td>0.422</td>
+      <td>0.252</td>
+      <td>-0.024</td>
+      <td>1.54047</td>
+      <td>0.130</td>
+      <td>Up</td>
+    </tr>
+    <tr>
+      <th>1248</th>
+      <td>2005</td>
+      <td>0.130</td>
+      <td>-0.955</td>
+      <td>0.043</td>
+      <td>0.422</td>
+      <td>0.252</td>
+      <td>1.42236</td>
+      <td>-0.298</td>
+      <td>Down</td>
+    </tr>
+    <tr>
+      <th>1249</th>
+      <td>2005</td>
+      <td>-0.298</td>
+      <td>0.130</td>
+      <td>-0.955</td>
+      <td>0.043</td>
+      <td>0.422</td>
+      <td>1.38254</td>
+      <td>-0.489</td>
+      <td>Down</td>
+    </tr>
+  </tbody>
+</table>
+<p>1250 rows × 9 columns</p>
+</div>
+
+<pre><code class="language-python">Smarket.drop(columns=[&quot;Direction&quot;]).corr()
 </code></pre>
-<pre><code class="language-python">fig, ax = subplots()
-ax.scatter(x, Y)
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>Year</th>
+      <th>Lag1</th>
+      <th>Lag2</th>
+      <th>Lag3</th>
+      <th>Lag4</th>
+      <th>Lag5</th>
+      <th>Volume</th>
+      <th>Today</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>Year</th>
+      <td>1.000000</td>
+      <td>0.029700</td>
+      <td>0.030596</td>
+      <td>0.033195</td>
+      <td>0.035689</td>
+      <td>0.029788</td>
+      <td>0.539006</td>
+      <td>0.030095</td>
+    </tr>
+    <tr>
+      <th>Lag1</th>
+      <td>0.029700</td>
+      <td>1.000000</td>
+      <td>-0.026294</td>
+      <td>-0.010803</td>
+      <td>-0.002986</td>
+      <td>-0.005675</td>
+      <td>0.040910</td>
+      <td>-0.026155</td>
+    </tr>
+    <tr>
+      <th>Lag2</th>
+      <td>0.030596</td>
+      <td>-0.026294</td>
+      <td>1.000000</td>
+      <td>-0.025897</td>
+      <td>-0.010854</td>
+      <td>-0.003558</td>
+      <td>-0.043383</td>
+      <td>-0.010250</td>
+    </tr>
+    <tr>
+      <th>Lag3</th>
+      <td>0.033195</td>
+      <td>-0.010803</td>
+      <td>-0.025897</td>
+      <td>1.000000</td>
+      <td>-0.024051</td>
+      <td>-0.018808</td>
+      <td>-0.041824</td>
+      <td>-0.002448</td>
+    </tr>
+    <tr>
+      <th>Lag4</th>
+      <td>0.035689</td>
+      <td>-0.002986</td>
+      <td>-0.010854</td>
+      <td>-0.024051</td>
+      <td>1.000000</td>
+      <td>-0.027084</td>
+      <td>-0.048414</td>
+      <td>-0.006900</td>
+    </tr>
+    <tr>
+      <th>Lag5</th>
+      <td>0.029788</td>
+      <td>-0.005675</td>
+      <td>-0.003558</td>
+      <td>-0.018808</td>
+      <td>-0.027084</td>
+      <td>1.000000</td>
+      <td>-0.022002</td>
+      <td>-0.034860</td>
+    </tr>
+    <tr>
+      <th>Volume</th>
+      <td>0.539006</td>
+      <td>0.040910</td>
+      <td>-0.043383</td>
+      <td>-0.041824</td>
+      <td>-0.048414</td>
+      <td>-0.022002</td>
+      <td>1.000000</td>
+      <td>0.014592</td>
+    </tr>
+    <tr>
+      <th>Today</th>
+      <td>0.030095</td>
+      <td>-0.026155</td>
+      <td>-0.010250</td>
+      <td>-0.002448</td>
+      <td>-0.006900</td>
+      <td>-0.034860</td>
+      <td>0.014592</td>
+      <td>1.000000</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<pre><code class="language-python">Smarket.plot(y='Volume')
 </code></pre>
-<pre><code>&lt;matplotlib.collections.PathCollection at 0x71ea3592b7a0&gt;
+<pre><code>&lt;Axes: &gt;
 </code></pre>
-<p><img alt="png" src="../Regularization%20with%20Lasso%20and%20Ridge_files/Regularization%20with%20Lasso%20and%20Ridge_4_1.png" /></p>
-<h2 id="next-we-fit-linear-regression-ridge-and-lasso">Next we fit linear regression, ridge, and lasso.</h2>
-<p>for ridge and lasso we do cross validation to determine best regularization parameter (alphas). We cross validate 50 alphas ranging from 10^-4 to 10^8. We also create error bar for each alphas and see the error std from 5-fold CV models.</p>
-<pre><code class="language-python">lr = skl.LinearRegression()
-lr.fit(X_train, y_train)
+<p><img alt="png" src="../z_ISLP%20demo4_files/z_ISLP%20demo4_4_1.png" /></p>
+<pre><code class="language-python">allvars = Smarket.drop(columns=[&quot;Today&quot;, &quot;Year&quot;, &quot;Direction&quot;])
+design = MS(allvars)
+X = design.fit_transform(Smarket)
+y = Smarket.Direction == &quot;Up&quot;
+glm = sm.GLM(y, X, family=sm.families.Binomial())
+results =  glm.fit()
+summarize(results)
+</code></pre>
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>coef</th>
+      <th>std err</th>
+      <th>z</th>
+      <th>P&gt;|z|</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>intercept</th>
+      <td>-0.1260</td>
+      <td>0.241</td>
+      <td>-0.523</td>
+      <td>0.601</td>
+    </tr>
+    <tr>
+      <th>Lag1</th>
+      <td>-0.0731</td>
+      <td>0.050</td>
+      <td>-1.457</td>
+      <td>0.145</td>
+    </tr>
+    <tr>
+      <th>Lag2</th>
+      <td>-0.0423</td>
+      <td>0.050</td>
+      <td>-0.845</td>
+      <td>0.398</td>
+    </tr>
+    <tr>
+      <th>Lag3</th>
+      <td>0.0111</td>
+      <td>0.050</td>
+      <td>0.222</td>
+      <td>0.824</td>
+    </tr>
+    <tr>
+      <th>Lag4</th>
+      <td>0.0094</td>
+      <td>0.050</td>
+      <td>0.187</td>
+      <td>0.851</td>
+    </tr>
+    <tr>
+      <th>Lag5</th>
+      <td>0.0103</td>
+      <td>0.050</td>
+      <td>0.208</td>
+      <td>0.835</td>
+    </tr>
+    <tr>
+      <th>Volume</th>
+      <td>0.1354</td>
+      <td>0.158</td>
+      <td>0.855</td>
+      <td>0.392</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<pre><code class="language-python">probs = results.predict()
+probs
+</code></pre>
+<pre><code>array([0.50708413, 0.48146788, 0.48113883, ..., 0.5392683 , 0.52611829,
+       0.51791656])
+</code></pre>
+<pre><code class="language-python">labels = np.array([&quot;Up&quot; if n &gt; 0.5 else &quot;Down&quot; for n in probs])
+labels
+</code></pre>
+<pre><code>array(['Up', 'Down', 'Down', ..., 'Up', 'Up', 'Up'], dtype='&lt;U4')
+</code></pre>
+<pre><code class="language-python">confusion_table(labels, Smarket.Direction)
+</code></pre>
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th>Truth</th>
+      <th>Down</th>
+      <th>Up</th>
+    </tr>
+    <tr>
+      <th>Predicted</th>
+      <th></th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>Down</th>
+      <td>145</td>
+      <td>141</td>
+    </tr>
+    <tr>
+      <th>Up</th>
+      <td>457</td>
+      <td>507</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+<pre><code class="language-python">train = (Smarket[&quot;Year&quot;] &lt; 2005)
+Smarket_train = Smarket[train]
+Smarket_test = Smarket[~train]
+</code></pre>
+<pre><code class="language-python">X_train, X_test = X[train], X[~train]
+y_train, y_test = y[train], y[~train]
+train_glm = sm.GLM(y_train, X_train, family=sm.families.Binomial())
+results = train_glm.fit()
+probs = results.predict(exog=X_test)
+</code></pre>
+<pre><code class="language-python">probs
+</code></pre>
+<pre><code>998     0.528220
+999     0.515669
+1000    0.522652
+1001    0.513854
+1002    0.498334
+          ...   
+1245    0.483637
+1246    0.506048
+1247    0.516658
+1248    0.516124
+1249    0.508072
+Length: 252, dtype: float64
+</code></pre>
+<pre><code class="language-python">labels = np.array([True if n &gt; 0.5 else False for n in probs])
+confusion_table(labels, y_test)
+</code></pre>
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th>Truth</th>
+      <th>False</th>
+      <th>True</th>
+    </tr>
+    <tr>
+      <th>Predicted</th>
+      <th></th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>False</th>
+      <td>77</td>
+      <td>97</td>
+    </tr>
+    <tr>
+      <th>True</th>
+      <td>34</td>
+      <td>44</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<pre><code class="language-python">X_train = (Smarket[train])[[&quot;Lag1&quot;, &quot;Lag2&quot;]]
+y_train = (Smarket[train]).Direction == &quot;Up&quot;
+X_test = (Smarket[~train])[[&quot;Lag1&quot;, &quot;Lag2&quot;]]
+y_test = (Smarket[~train]).Direction == &quot;Up&quot;
+</code></pre>
+<pre><code class="language-python">lda = LDA(store_covariance=True)
+lda.fit(X_train, y_train)
 </code></pre>
 <style>#sk-container-id-4 {
   /* Definition of color scheme common for light and dark mode */
@@ -838,11 +1278,69 @@ div.sk-label-container:hover .sk-estimator-doc-link.fitted:hover,
   background-color: var(--sklearn-color-fitted-level-3);
 }
 </style>
-<div id="sk-container-id-4" class="sk-top-container"><div class="sk-text-repr-fallback"><pre>LinearRegression()</pre><b>In a Jupyter environment, please rerun this cell to show the HTML representation or trust the notebook. <br />On GitHub, the HTML representation is unable to render, please try loading this page with nbviewer.org.</b></div><div class="sk-container" hidden><div class="sk-item"><div class="sk-estimator fitted sk-toggleable"><input class="sk-toggleable__control sk-hidden--visually" id="sk-estimator-id-4" type="checkbox" checked><label for="sk-estimator-id-4" class="sk-toggleable__label fitted sk-toggleable__label-arrow"><div><div>LinearRegression</div></div><div><a class="sk-estimator-doc-link fitted" rel="noreferrer" target="_blank" href="https://scikit-learn.org/1.6/modules/generated/sklearn.linear_model.LinearRegression.html">?<span>Documentation for LinearRegression</span></a><span class="sk-estimator-doc-link fitted">i<span>Fitted</span></span></div></label><div class="sk-toggleable__content fitted"><pre>LinearRegression()</pre></div> </div></div></div></div>
+<div id="sk-container-id-4" class="sk-top-container"><div class="sk-text-repr-fallback"><pre>LinearDiscriminantAnalysis(store_covariance=True)</pre><b>In a Jupyter environment, please rerun this cell to show the HTML representation or trust the notebook. <br />On GitHub, the HTML representation is unable to render, please try loading this page with nbviewer.org.</b></div><div class="sk-container" hidden><div class="sk-item"><div class="sk-estimator fitted sk-toggleable"><input class="sk-toggleable__control sk-hidden--visually" id="sk-estimator-id-4" type="checkbox" checked><label for="sk-estimator-id-4" class="sk-toggleable__label fitted sk-toggleable__label-arrow"><div><div>LinearDiscriminantAnalysis</div></div><div><a class="sk-estimator-doc-link fitted" rel="noreferrer" target="_blank" href="https://scikit-learn.org/1.6/modules/generated/sklearn.discriminant_analysis.LinearDiscriminantAnalysis.html">?<span>Documentation for LinearDiscriminantAnalysis</span></a><span class="sk-estimator-doc-link fitted">i<span>Fitted</span></span></div></label><div class="sk-toggleable__content fitted"><pre>LinearDiscriminantAnalysis(store_covariance=True)</pre></div> </div></div></div></div>
 
-<pre><code class="language-python">lambdas = 10**np.linspace(8, -4, 50)
-ridge = skl.RidgeCV(store_cv_results=True, alphas=lambdas)
-ridge.fit(X_train, y_train)
+<pre><code class="language-python">lda.means_, lda.priors_
+</code></pre>
+<pre><code>(array([[ 0.04279022,  0.03389409],
+        [-0.03954635, -0.03132544]]),
+ array([0.49198397, 0.50801603]))
+</code></pre>
+<pre><code class="language-python">lda_pred = lda.predict(X_test)
+</code></pre>
+<pre><code class="language-python">confusion_table(lda_pred, y_test)
+</code></pre>
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th>Truth</th>
+      <th>False</th>
+      <th>True</th>
+    </tr>
+    <tr>
+      <th>Predicted</th>
+      <th></th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>False</th>
+      <td>35</td>
+      <td>35</td>
+    </tr>
+    <tr>
+      <th>True</th>
+      <td>76</td>
+      <td>106</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<pre><code class="language-python">lda_prob = lda.predict_proba(X_test)
+</code></pre>
+<pre><code class="language-python">
+</code></pre>
+<pre><code>0.5202349505356155
+</code></pre>
+<pre><code class="language-python">qda = QDA(store_covariance=True)
+</code></pre>
+<pre><code class="language-python">qda.fit(X_train, y_train)
 </code></pre>
 <style>#sk-container-id-5 {
   /* Definition of color scheme common for light and dark mode */
@@ -1259,48 +1757,29 @@ div.sk-label-container:hover .sk-estimator-doc-link.fitted:hover,
   background-color: var(--sklearn-color-fitted-level-3);
 }
 </style>
-<div id="sk-container-id-5" class="sk-top-container"><div class="sk-text-repr-fallback"><pre>RidgeCV(alphas=array([1.00000000e+08, 5.68986603e+07, 3.23745754e+07, 1.84206997e+07,
-       1.04811313e+07, 5.96362332e+06, 3.39322177e+06, 1.93069773e+06,
-       1.09854114e+06, 6.25055193e+05, 3.55648031e+05, 2.02358965e+05,
-       1.15139540e+05, 6.55128557e+04, 3.72759372e+04, 2.12095089e+04,
-       1.20679264e+04, 6.86648845e+03, 3.90693994e+03, 2.22299648e+03,
-       1.26485522e+03, 7.19685673e+0...
-       1.38949549e+01, 7.90604321e+00, 4.49843267e+00, 2.55954792e+00,
-       1.45634848e+00, 8.28642773e-01, 4.71486636e-01, 2.68269580e-01,
-       1.52641797e-01, 8.68511374e-02, 4.94171336e-02, 2.81176870e-02,
-       1.59985872e-02, 9.10298178e-03, 5.17947468e-03, 2.94705170e-03,
-       1.67683294e-03, 9.54095476e-04, 5.42867544e-04, 3.08884360e-04,
-       1.75751062e-04, 1.00000000e-04]),
-        store_cv_results=True)</pre><b>In a Jupyter environment, please rerun this cell to show the HTML representation or trust the notebook. <br />On GitHub, the HTML representation is unable to render, please try loading this page with nbviewer.org.</b></div><div class="sk-container" hidden><div class="sk-item"><div class="sk-estimator fitted sk-toggleable"><input class="sk-toggleable__control sk-hidden--visually" id="sk-estimator-id-5" type="checkbox" checked><label for="sk-estimator-id-5" class="sk-toggleable__label fitted sk-toggleable__label-arrow"><div><div>RidgeCV</div></div><div><a class="sk-estimator-doc-link fitted" rel="noreferrer" target="_blank" href="https://scikit-learn.org/1.6/modules/generated/sklearn.linear_model.RidgeCV.html">?<span>Documentation for RidgeCV</span></a><span class="sk-estimator-doc-link fitted">i<span>Fitted</span></span></div></label><div class="sk-toggleable__content fitted"><pre>RidgeCV(alphas=array([1.00000000e+08, 5.68986603e+07, 3.23745754e+07, 1.84206997e+07,
-       1.04811313e+07, 5.96362332e+06, 3.39322177e+06, 1.93069773e+06,
-       1.09854114e+06, 6.25055193e+05, 3.55648031e+05, 2.02358965e+05,
-       1.15139540e+05, 6.55128557e+04, 3.72759372e+04, 2.12095089e+04,
-       1.20679264e+04, 6.86648845e+03, 3.90693994e+03, 2.22299648e+03,
-       1.26485522e+03, 7.19685673e+0...
-       1.38949549e+01, 7.90604321e+00, 4.49843267e+00, 2.55954792e+00,
-       1.45634848e+00, 8.28642773e-01, 4.71486636e-01, 2.68269580e-01,
-       1.52641797e-01, 8.68511374e-02, 4.94171336e-02, 2.81176870e-02,
-       1.59985872e-02, 9.10298178e-03, 5.17947468e-03, 2.94705170e-03,
-       1.67683294e-03, 9.54095476e-04, 5.42867544e-04, 3.08884360e-04,
-       1.75751062e-04, 1.00000000e-04]),
-        store_cv_results=True)</pre></div> </div></div></div></div>
+<div id="sk-container-id-5" class="sk-top-container"><div class="sk-text-repr-fallback"><pre>QuadraticDiscriminantAnalysis(store_covariance=True)</pre><b>In a Jupyter environment, please rerun this cell to show the HTML representation or trust the notebook. <br />On GitHub, the HTML representation is unable to render, please try loading this page with nbviewer.org.</b></div><div class="sk-container" hidden><div class="sk-item"><div class="sk-estimator fitted sk-toggleable"><input class="sk-toggleable__control sk-hidden--visually" id="sk-estimator-id-5" type="checkbox" checked><label for="sk-estimator-id-5" class="sk-toggleable__label fitted sk-toggleable__label-arrow"><div><div>QuadraticDiscriminantAnalysis</div></div><div><a class="sk-estimator-doc-link fitted" rel="noreferrer" target="_blank" href="https://scikit-learn.org/1.6/modules/generated/sklearn.discriminant_analysis.QuadraticDiscriminantAnalysis.html">?<span>Documentation for QuadraticDiscriminantAnalysis</span></a><span class="sk-estimator-doc-link fitted">i<span>Fitted</span></span></div></label><div class="sk-toggleable__content fitted"><pre>QuadraticDiscriminantAnalysis(store_covariance=True)</pre></div> </div></div></div></div>
 
-<pre><code class="language-python">err = ridge.cv_results_.mean(0)
-
-fig, ax = subplots()
-ax.set_title(&quot;Ridge CV error bar from 5-fold cross validation&quot;)
-ax.set_xlabel(&quot;-log(alphas)&quot;)
-ax.set_ylabel(&quot;MSE&quot;)
-ax.errorbar(-np.log10(ridge.alphas), err, yerr=ridge.cv_results_.std(0)/np.sqrt(3))
-ax.axvline(-np.log10(ridge.alpha_), ls='--')
+<pre><code class="language-python">qda.means_, qda.priors_
 </code></pre>
-<pre><code>&lt;matplotlib.lines.Line2D at 0x71ea2c051310&gt;
+<pre><code>(array([[ 0.04279022,  0.03389409],
+        [-0.03954635, -0.03132544]]),
+ array([0.49198397, 0.50801603]))
 </code></pre>
-<p><img alt="png" src="../Regularization%20with%20Lasso%20and%20Ridge_files/Regularization%20with%20Lasso%20and%20Ridge_8_1.png" /></p>
-<pre><code class="language-python">lasso = skl.LassoCV(alphas=lambdas)
-lasso.fit(X_train, y_train)
+<pre><code class="language-python">qda.covariance_
 </code></pre>
-<style>#sk-container-id-7 {
+<pre><code>[array([[ 1.50662277, -0.03924806],
+        [-0.03924806,  1.53559498]]),
+ array([[ 1.51700576, -0.02787349],
+        [-0.02787349,  1.49026815]])]
+</code></pre>
+<pre><code class="language-python">(qda.predict(X_test) == y_test).mean()
+</code></pre>
+<pre><code>0.5992063492063492
+</code></pre>
+<pre><code class="language-python">NB = GaussianNB()
+NB.fit(X_train, y_train)
+</code></pre>
+<style>#sk-container-id-6 {
   /* Definition of color scheme common for light and dark mode */
   --sklearn-color-text: #000;
   --sklearn-color-text-muted: #666;
@@ -1331,15 +1810,15 @@ lasso.fit(X_train, y_train)
   }
 }
 
-#sk-container-id-7 {
+#sk-container-id-6 {
   color: var(--sklearn-color-text);
 }
 
-#sk-container-id-7 pre {
+#sk-container-id-6 pre {
   padding: 0;
 }
 
-#sk-container-id-7 input.sk-hidden--visually {
+#sk-container-id-6 input.sk-hidden--visually {
   border: 0;
   clip: rect(1px 1px 1px 1px);
   clip: rect(1px, 1px, 1px, 1px);
@@ -1351,7 +1830,7 @@ lasso.fit(X_train, y_train)
   width: 1px;
 }
 
-#sk-container-id-7 div.sk-dashed-wrapped {
+#sk-container-id-6 div.sk-dashed-wrapped {
   border: 1px dashed var(--sklearn-color-line);
   margin: 0 0.4em 0.5em 0.4em;
   box-sizing: border-box;
@@ -1359,7 +1838,7 @@ lasso.fit(X_train, y_train)
   background-color: var(--sklearn-color-background);
 }
 
-#sk-container-id-7 div.sk-container {
+#sk-container-id-6 div.sk-container {
   /* jupyter's `normalize.less` sets `[hidden] { display: none; }`
      but bootstrap.min.css set `[hidden] { display: none !important; }`
      so we also need the `!important` here to be able to override the
@@ -1369,7 +1848,7 @@ lasso.fit(X_train, y_train)
   position: relative;
 }
 
-#sk-container-id-7 div.sk-text-repr-fallback {
+#sk-container-id-6 div.sk-text-repr-fallback {
   display: none;
 }
 
@@ -1385,14 +1864,14 @@ div.sk-item {
 
 /* Parallel-specific style estimator block */
 
-#sk-container-id-7 div.sk-parallel-item::after {
+#sk-container-id-6 div.sk-parallel-item::after {
   content: "";
   width: 100%;
   border-bottom: 2px solid var(--sklearn-color-text-on-default-background);
   flex-grow: 1;
 }
 
-#sk-container-id-7 div.sk-parallel {
+#sk-container-id-6 div.sk-parallel {
   display: flex;
   align-items: stretch;
   justify-content: center;
@@ -1400,28 +1879,28 @@ div.sk-item {
   position: relative;
 }
 
-#sk-container-id-7 div.sk-parallel-item {
+#sk-container-id-6 div.sk-parallel-item {
   display: flex;
   flex-direction: column;
 }
 
-#sk-container-id-7 div.sk-parallel-item:first-child::after {
+#sk-container-id-6 div.sk-parallel-item:first-child::after {
   align-self: flex-end;
   width: 50%;
 }
 
-#sk-container-id-7 div.sk-parallel-item:last-child::after {
+#sk-container-id-6 div.sk-parallel-item:last-child::after {
   align-self: flex-start;
   width: 50%;
 }
 
-#sk-container-id-7 div.sk-parallel-item:only-child::after {
+#sk-container-id-6 div.sk-parallel-item:only-child::after {
   width: 0;
 }
 
 /* Serial-specific style estimator block */
 
-#sk-container-id-7 div.sk-serial {
+#sk-container-id-6 div.sk-serial {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -1438,14 +1917,14 @@ clickable and can be expanded/collapsed.
 
 /* Pipeline and ColumnTransformer style (default) */
 
-#sk-container-id-7 div.sk-toggleable {
+#sk-container-id-6 div.sk-toggleable {
   /* Default theme specific background. It is overwritten whether we have a
   specific estimator or a Pipeline/ColumnTransformer */
   background-color: var(--sklearn-color-background);
 }
 
 /* Toggleable label */
-#sk-container-id-7 label.sk-toggleable__label {
+#sk-container-id-6 label.sk-toggleable__label {
   cursor: pointer;
   display: flex;
   width: 100%;
@@ -1458,13 +1937,13 @@ clickable and can be expanded/collapsed.
   gap: 0.5em;
 }
 
-#sk-container-id-7 label.sk-toggleable__label .caption {
+#sk-container-id-6 label.sk-toggleable__label .caption {
   font-size: 0.6rem;
   font-weight: lighter;
   color: var(--sklearn-color-text-muted);
 }
 
-#sk-container-id-7 label.sk-toggleable__label-arrow:before {
+#sk-container-id-6 label.sk-toggleable__label-arrow:before {
   /* Arrow on the left of the label */
   content: "▸";
   float: left;
@@ -1472,13 +1951,13 @@ clickable and can be expanded/collapsed.
   color: var(--sklearn-color-icon);
 }
 
-#sk-container-id-7 label.sk-toggleable__label-arrow:hover:before {
+#sk-container-id-6 label.sk-toggleable__label-arrow:hover:before {
   color: var(--sklearn-color-text);
 }
 
 /* Toggleable content - dropdown */
 
-#sk-container-id-7 div.sk-toggleable__content {
+#sk-container-id-6 div.sk-toggleable__content {
   max-height: 0;
   max-width: 0;
   overflow: hidden;
@@ -1487,12 +1966,12 @@ clickable and can be expanded/collapsed.
   background-color: var(--sklearn-color-unfitted-level-0);
 }
 
-#sk-container-id-7 div.sk-toggleable__content.fitted {
+#sk-container-id-6 div.sk-toggleable__content.fitted {
   /* fitted */
   background-color: var(--sklearn-color-fitted-level-0);
 }
 
-#sk-container-id-7 div.sk-toggleable__content pre {
+#sk-container-id-6 div.sk-toggleable__content pre {
   margin: 0.2em;
   border-radius: 0.25em;
   color: var(--sklearn-color-text);
@@ -1500,79 +1979,79 @@ clickable and can be expanded/collapsed.
   background-color: var(--sklearn-color-unfitted-level-0);
 }
 
-#sk-container-id-7 div.sk-toggleable__content.fitted pre {
+#sk-container-id-6 div.sk-toggleable__content.fitted pre {
   /* unfitted */
   background-color: var(--sklearn-color-fitted-level-0);
 }
 
-#sk-container-id-7 input.sk-toggleable__control:checked~div.sk-toggleable__content {
+#sk-container-id-6 input.sk-toggleable__control:checked~div.sk-toggleable__content {
   /* Expand drop-down */
   max-height: 200px;
   max-width: 100%;
   overflow: auto;
 }
 
-#sk-container-id-7 input.sk-toggleable__control:checked~label.sk-toggleable__label-arrow:before {
+#sk-container-id-6 input.sk-toggleable__control:checked~label.sk-toggleable__label-arrow:before {
   content: "▾";
 }
 
 /* Pipeline/ColumnTransformer-specific style */
 
-#sk-container-id-7 div.sk-label input.sk-toggleable__control:checked~label.sk-toggleable__label {
+#sk-container-id-6 div.sk-label input.sk-toggleable__control:checked~label.sk-toggleable__label {
   color: var(--sklearn-color-text);
   background-color: var(--sklearn-color-unfitted-level-2);
 }
 
-#sk-container-id-7 div.sk-label.fitted input.sk-toggleable__control:checked~label.sk-toggleable__label {
+#sk-container-id-6 div.sk-label.fitted input.sk-toggleable__control:checked~label.sk-toggleable__label {
   background-color: var(--sklearn-color-fitted-level-2);
 }
 
 /* Estimator-specific style */
 
 /* Colorize estimator box */
-#sk-container-id-7 div.sk-estimator input.sk-toggleable__control:checked~label.sk-toggleable__label {
+#sk-container-id-6 div.sk-estimator input.sk-toggleable__control:checked~label.sk-toggleable__label {
   /* unfitted */
   background-color: var(--sklearn-color-unfitted-level-2);
 }
 
-#sk-container-id-7 div.sk-estimator.fitted input.sk-toggleable__control:checked~label.sk-toggleable__label {
+#sk-container-id-6 div.sk-estimator.fitted input.sk-toggleable__control:checked~label.sk-toggleable__label {
   /* fitted */
   background-color: var(--sklearn-color-fitted-level-2);
 }
 
-#sk-container-id-7 div.sk-label label.sk-toggleable__label,
-#sk-container-id-7 div.sk-label label {
+#sk-container-id-6 div.sk-label label.sk-toggleable__label,
+#sk-container-id-6 div.sk-label label {
   /* The background is the default theme color */
   color: var(--sklearn-color-text-on-default-background);
 }
 
 /* On hover, darken the color of the background */
-#sk-container-id-7 div.sk-label:hover label.sk-toggleable__label {
+#sk-container-id-6 div.sk-label:hover label.sk-toggleable__label {
   color: var(--sklearn-color-text);
   background-color: var(--sklearn-color-unfitted-level-2);
 }
 
 /* Label box, darken color on hover, fitted */
-#sk-container-id-7 div.sk-label.fitted:hover label.sk-toggleable__label.fitted {
+#sk-container-id-6 div.sk-label.fitted:hover label.sk-toggleable__label.fitted {
   color: var(--sklearn-color-text);
   background-color: var(--sklearn-color-fitted-level-2);
 }
 
 /* Estimator label */
 
-#sk-container-id-7 div.sk-label label {
+#sk-container-id-6 div.sk-label label {
   font-family: monospace;
   font-weight: bold;
   display: inline-block;
   line-height: 1.2em;
 }
 
-#sk-container-id-7 div.sk-label-container {
+#sk-container-id-6 div.sk-label-container {
   text-align: center;
 }
 
 /* Estimator-specific */
-#sk-container-id-7 div.sk-estimator {
+#sk-container-id-6 div.sk-estimator {
   font-family: monospace;
   border: 1px dotted var(--sklearn-color-border-box);
   border-radius: 0.25em;
@@ -1582,18 +2061,18 @@ clickable and can be expanded/collapsed.
   background-color: var(--sklearn-color-unfitted-level-0);
 }
 
-#sk-container-id-7 div.sk-estimator.fitted {
+#sk-container-id-6 div.sk-estimator.fitted {
   /* fitted */
   background-color: var(--sklearn-color-fitted-level-0);
 }
 
 /* on hover */
-#sk-container-id-7 div.sk-estimator:hover {
+#sk-container-id-6 div.sk-estimator:hover {
   /* unfitted */
   background-color: var(--sklearn-color-unfitted-level-2);
 }
 
-#sk-container-id-7 div.sk-estimator.fitted:hover {
+#sk-container-id-6 div.sk-estimator.fitted:hover {
   /* fitted */
   background-color: var(--sklearn-color-fitted-level-2);
 }
@@ -1681,7 +2160,7 @@ div.sk-label-container:hover .sk-estimator-doc-link.fitted:hover,
 
 /* "?"-specific style due to the `<a>` HTML tag */
 
-#sk-container-id-7 a.estimator_doc_link {
+#sk-container-id-6 a.estimator_doc_link {
   float: right;
   font-size: 1rem;
   line-height: 1em;
@@ -1696,96 +2175,43 @@ div.sk-label-container:hover .sk-estimator-doc-link.fitted:hover,
   border: var(--sklearn-color-unfitted-level-1) 1pt solid;
 }
 
-#sk-container-id-7 a.estimator_doc_link.fitted {
+#sk-container-id-6 a.estimator_doc_link.fitted {
   /* fitted */
   border: var(--sklearn-color-fitted-level-1) 1pt solid;
   color: var(--sklearn-color-fitted-level-1);
 }
 
 /* On hover */
-#sk-container-id-7 a.estimator_doc_link:hover {
+#sk-container-id-6 a.estimator_doc_link:hover {
   /* unfitted */
   background-color: var(--sklearn-color-unfitted-level-3);
   color: var(--sklearn-color-background);
   text-decoration: none;
 }
 
-#sk-container-id-7 a.estimator_doc_link.fitted:hover {
+#sk-container-id-6 a.estimator_doc_link.fitted:hover {
   /* fitted */
   background-color: var(--sklearn-color-fitted-level-3);
 }
 </style>
-<div id="sk-container-id-7" class="sk-top-container"><div class="sk-text-repr-fallback"><pre>LassoCV(alphas=array([1.00000000e+08, 5.68986603e+07, 3.23745754e+07, 1.84206997e+07,
-       1.04811313e+07, 5.96362332e+06, 3.39322177e+06, 1.93069773e+06,
-       1.09854114e+06, 6.25055193e+05, 3.55648031e+05, 2.02358965e+05,
-       1.15139540e+05, 6.55128557e+04, 3.72759372e+04, 2.12095089e+04,
-       1.20679264e+04, 6.86648845e+03, 3.90693994e+03, 2.22299648e+03,
-       1.26485522e+03, 7.19685673e+0...
-       1.32571137e+02, 7.54312006e+01, 4.29193426e+01, 2.44205309e+01,
-       1.38949549e+01, 7.90604321e+00, 4.49843267e+00, 2.55954792e+00,
-       1.45634848e+00, 8.28642773e-01, 4.71486636e-01, 2.68269580e-01,
-       1.52641797e-01, 8.68511374e-02, 4.94171336e-02, 2.81176870e-02,
-       1.59985872e-02, 9.10298178e-03, 5.17947468e-03, 2.94705170e-03,
-       1.67683294e-03, 9.54095476e-04, 5.42867544e-04, 3.08884360e-04,
-       1.75751062e-04, 1.00000000e-04]))</pre><b>In a Jupyter environment, please rerun this cell to show the HTML representation or trust the notebook. <br />On GitHub, the HTML representation is unable to render, please try loading this page with nbviewer.org.</b></div><div class="sk-container" hidden><div class="sk-item"><div class="sk-estimator fitted sk-toggleable"><input class="sk-toggleable__control sk-hidden--visually" id="sk-estimator-id-7" type="checkbox" checked><label for="sk-estimator-id-7" class="sk-toggleable__label fitted sk-toggleable__label-arrow"><div><div>LassoCV</div></div><div><a class="sk-estimator-doc-link fitted" rel="noreferrer" target="_blank" href="https://scikit-learn.org/1.6/modules/generated/sklearn.linear_model.LassoCV.html">?<span>Documentation for LassoCV</span></a><span class="sk-estimator-doc-link fitted">i<span>Fitted</span></span></div></label><div class="sk-toggleable__content fitted"><pre>LassoCV(alphas=array([1.00000000e+08, 5.68986603e+07, 3.23745754e+07, 1.84206997e+07,
-       1.04811313e+07, 5.96362332e+06, 3.39322177e+06, 1.93069773e+06,
-       1.09854114e+06, 6.25055193e+05, 3.55648031e+05, 2.02358965e+05,
-       1.15139540e+05, 6.55128557e+04, 3.72759372e+04, 2.12095089e+04,
-       1.20679264e+04, 6.86648845e+03, 3.90693994e+03, 2.22299648e+03,
-       1.26485522e+03, 7.19685673e+0...
-       1.32571137e+02, 7.54312006e+01, 4.29193426e+01, 2.44205309e+01,
-       1.38949549e+01, 7.90604321e+00, 4.49843267e+00, 2.55954792e+00,
-       1.45634848e+00, 8.28642773e-01, 4.71486636e-01, 2.68269580e-01,
-       1.52641797e-01, 8.68511374e-02, 4.94171336e-02, 2.81176870e-02,
-       1.59985872e-02, 9.10298178e-03, 5.17947468e-03, 2.94705170e-03,
-       1.67683294e-03, 9.54095476e-04, 5.42867544e-04, 3.08884360e-04,
-       1.75751062e-04, 1.00000000e-04]))</pre></div> </div></div></div></div>
+<div id="sk-container-id-6" class="sk-top-container"><div class="sk-text-repr-fallback"><pre>GaussianNB()</pre><b>In a Jupyter environment, please rerun this cell to show the HTML representation or trust the notebook. <br />On GitHub, the HTML representation is unable to render, please try loading this page with nbviewer.org.</b></div><div class="sk-container" hidden><div class="sk-item"><div class="sk-estimator fitted sk-toggleable"><input class="sk-toggleable__control sk-hidden--visually" id="sk-estimator-id-6" type="checkbox" checked><label for="sk-estimator-id-6" class="sk-toggleable__label fitted sk-toggleable__label-arrow"><div><div>GaussianNB</div></div><div><a class="sk-estimator-doc-link fitted" rel="noreferrer" target="_blank" href="https://scikit-learn.org/1.6/modules/generated/sklearn.naive_bayes.GaussianNB.html">?<span>Documentation for GaussianNB</span></a><span class="sk-estimator-doc-link fitted">i<span>Fitted</span></span></div></label><div class="sk-toggleable__content fitted"><pre>GaussianNB()</pre></div> </div></div></div></div>
 
-<pre><code class="language-python">err = lasso.mse_path_.mean(1)
-fig, ax = subplots()
-ax.set_xlabel(&quot;-log(alphas)&quot;)
-ax.set_ylabel(&quot;MSE&quot;)
-ax.errorbar(-np.log10(lasso.alphas_), err, yerr=lasso.mse_path_.std(1)/np.sqrt(3))
-ax.axvline(-np.log10(lasso.alpha_), ls='--')
+<pre><code class="language-python">NB.theta_, NB.var_
 </code></pre>
-<pre><code>&lt;matplotlib.lines.Line2D at 0x71ea2bcd7620&gt;
+<pre><code>(array([[ 0.04279022,  0.03389409],
+        [-0.03954635, -0.03132544]]),
+ array([[1.50355429, 1.53246749],
+        [1.51401364, 1.48732877]]))
 </code></pre>
-<p><img alt="png" src="../Regularization%20with%20Lasso%20and%20Ridge_files/Regularization%20with%20Lasso%20and%20Ridge_10_1.png" /></p>
-<h2 id="results">Results</h2>
-<ul>
-<li>We see all the method doing well, with about 85% R2. Because the data are not linearly independent and there is enough training data (we use 80% of data), regularization is'nt actually needed here.</li>
-<li>Lasso is the closest to selected coefficient. it also do variable selection and eliminate x1 and x2 as the previously selected coefficient are close to zero (0.1)</li>
-</ul>
-<pre><code class="language-python">lr.coef_, ridge.coef_, lasso.coef_
+<pre><code class="language-python">(NB.predict(X_test) == y_test).mean()
 </code></pre>
-<pre><code>(array([-1.34480014, -1.42828863, -6.76290371]),
- array([-1.04400461, -1.01056116, -6.62594185]),
- array([-0.        , -0.        , -6.82785986]))
+<pre><code>0.5952380952380952
 </code></pre>
-<pre><code class="language-python">lr.intercept_, ridge.intercept_, lasso.intercept_
+<pre><code class="language-python">knn1 = KNeighborsClassifier(n_neighbors=1)
+knn1.fit(X_train, y_train)
+(knn1.predict(X_test) == y_test).mean()
 </code></pre>
-<pre><code>(10.855330811482283, 9.743354531099754, 6.7171981562675445)
-</code></pre>
-<pre><code class="language-python">R2(lr.predict(X_test), y_test), R2(ridge.predict(X_test), y_test), R2(lasso.predict(X_test), y_test)
-</code></pre>
-<pre><code>(0.8585674738446629, 0.8492477120995332, 0.8531453072140727)
-</code></pre>
-<pre><code class="language-python">MSE(lr.predict(X_test), y_test), MSE(ridge.predict(X_test), y_test), MSE(lasso.predict(X_test), y_test)
-</code></pre>
-<pre><code>(709.4694629066079, 724.1507926668988, 734.2033857781576)
-</code></pre>
-<pre><code class="language-python">ridge.alpha_, lasso.alpha_
-</code></pre>
-<pre><code>(232.99518105153717, 13.894954943731388)
-</code></pre>
-<h2 id="3-reducing-the-training-data-to-5">3. Reducing the training data to 5%</h2>
-<p>We will try to see regularization in action with reducing training data</p>
-<pre><code class="language-python">X_train, X_test, y_train, y_test = skm.train_test_split(X.T, Y, test_size=0.95, random_state=7)
-</code></pre>
-<pre><code class="language-python">lr = skl.LinearRegression()
-lr.fit(X_train, y_train)
-</code></pre>
-<style>#sk-container-id-45 {
+<style>#sk-container-id-9 {
   /* Definition of color scheme common for light and dark mode */
   --sklearn-color-text: #000;
   --sklearn-color-text-muted: #666;
@@ -1816,15 +2242,15 @@ lr.fit(X_train, y_train)
   }
 }
 
-#sk-container-id-45 {
+#sk-container-id-9 {
   color: var(--sklearn-color-text);
 }
 
-#sk-container-id-45 pre {
+#sk-container-id-9 pre {
   padding: 0;
 }
 
-#sk-container-id-45 input.sk-hidden--visually {
+#sk-container-id-9 input.sk-hidden--visually {
   border: 0;
   clip: rect(1px 1px 1px 1px);
   clip: rect(1px, 1px, 1px, 1px);
@@ -1836,7 +2262,7 @@ lr.fit(X_train, y_train)
   width: 1px;
 }
 
-#sk-container-id-45 div.sk-dashed-wrapped {
+#sk-container-id-9 div.sk-dashed-wrapped {
   border: 1px dashed var(--sklearn-color-line);
   margin: 0 0.4em 0.5em 0.4em;
   box-sizing: border-box;
@@ -1844,7 +2270,7 @@ lr.fit(X_train, y_train)
   background-color: var(--sklearn-color-background);
 }
 
-#sk-container-id-45 div.sk-container {
+#sk-container-id-9 div.sk-container {
   /* jupyter's `normalize.less` sets `[hidden] { display: none; }`
      but bootstrap.min.css set `[hidden] { display: none !important; }`
      so we also need the `!important` here to be able to override the
@@ -1854,7 +2280,7 @@ lr.fit(X_train, y_train)
   position: relative;
 }
 
-#sk-container-id-45 div.sk-text-repr-fallback {
+#sk-container-id-9 div.sk-text-repr-fallback {
   display: none;
 }
 
@@ -1870,14 +2296,14 @@ div.sk-item {
 
 /* Parallel-specific style estimator block */
 
-#sk-container-id-45 div.sk-parallel-item::after {
+#sk-container-id-9 div.sk-parallel-item::after {
   content: "";
   width: 100%;
   border-bottom: 2px solid var(--sklearn-color-text-on-default-background);
   flex-grow: 1;
 }
 
-#sk-container-id-45 div.sk-parallel {
+#sk-container-id-9 div.sk-parallel {
   display: flex;
   align-items: stretch;
   justify-content: center;
@@ -1885,28 +2311,28 @@ div.sk-item {
   position: relative;
 }
 
-#sk-container-id-45 div.sk-parallel-item {
+#sk-container-id-9 div.sk-parallel-item {
   display: flex;
   flex-direction: column;
 }
 
-#sk-container-id-45 div.sk-parallel-item:first-child::after {
+#sk-container-id-9 div.sk-parallel-item:first-child::after {
   align-self: flex-end;
   width: 50%;
 }
 
-#sk-container-id-45 div.sk-parallel-item:last-child::after {
+#sk-container-id-9 div.sk-parallel-item:last-child::after {
   align-self: flex-start;
   width: 50%;
 }
 
-#sk-container-id-45 div.sk-parallel-item:only-child::after {
+#sk-container-id-9 div.sk-parallel-item:only-child::after {
   width: 0;
 }
 
 /* Serial-specific style estimator block */
 
-#sk-container-id-45 div.sk-serial {
+#sk-container-id-9 div.sk-serial {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -1923,14 +2349,14 @@ clickable and can be expanded/collapsed.
 
 /* Pipeline and ColumnTransformer style (default) */
 
-#sk-container-id-45 div.sk-toggleable {
+#sk-container-id-9 div.sk-toggleable {
   /* Default theme specific background. It is overwritten whether we have a
   specific estimator or a Pipeline/ColumnTransformer */
   background-color: var(--sklearn-color-background);
 }
 
 /* Toggleable label */
-#sk-container-id-45 label.sk-toggleable__label {
+#sk-container-id-9 label.sk-toggleable__label {
   cursor: pointer;
   display: flex;
   width: 100%;
@@ -1943,13 +2369,13 @@ clickable and can be expanded/collapsed.
   gap: 0.5em;
 }
 
-#sk-container-id-45 label.sk-toggleable__label .caption {
+#sk-container-id-9 label.sk-toggleable__label .caption {
   font-size: 0.6rem;
   font-weight: lighter;
   color: var(--sklearn-color-text-muted);
 }
 
-#sk-container-id-45 label.sk-toggleable__label-arrow:before {
+#sk-container-id-9 label.sk-toggleable__label-arrow:before {
   /* Arrow on the left of the label */
   content: "▸";
   float: left;
@@ -1957,13 +2383,13 @@ clickable and can be expanded/collapsed.
   color: var(--sklearn-color-icon);
 }
 
-#sk-container-id-45 label.sk-toggleable__label-arrow:hover:before {
+#sk-container-id-9 label.sk-toggleable__label-arrow:hover:before {
   color: var(--sklearn-color-text);
 }
 
 /* Toggleable content - dropdown */
 
-#sk-container-id-45 div.sk-toggleable__content {
+#sk-container-id-9 div.sk-toggleable__content {
   max-height: 0;
   max-width: 0;
   overflow: hidden;
@@ -1972,12 +2398,12 @@ clickable and can be expanded/collapsed.
   background-color: var(--sklearn-color-unfitted-level-0);
 }
 
-#sk-container-id-45 div.sk-toggleable__content.fitted {
+#sk-container-id-9 div.sk-toggleable__content.fitted {
   /* fitted */
   background-color: var(--sklearn-color-fitted-level-0);
 }
 
-#sk-container-id-45 div.sk-toggleable__content pre {
+#sk-container-id-9 div.sk-toggleable__content pre {
   margin: 0.2em;
   border-radius: 0.25em;
   color: var(--sklearn-color-text);
@@ -1985,79 +2411,79 @@ clickable and can be expanded/collapsed.
   background-color: var(--sklearn-color-unfitted-level-0);
 }
 
-#sk-container-id-45 div.sk-toggleable__content.fitted pre {
+#sk-container-id-9 div.sk-toggleable__content.fitted pre {
   /* unfitted */
   background-color: var(--sklearn-color-fitted-level-0);
 }
 
-#sk-container-id-45 input.sk-toggleable__control:checked~div.sk-toggleable__content {
+#sk-container-id-9 input.sk-toggleable__control:checked~div.sk-toggleable__content {
   /* Expand drop-down */
   max-height: 200px;
   max-width: 100%;
   overflow: auto;
 }
 
-#sk-container-id-45 input.sk-toggleable__control:checked~label.sk-toggleable__label-arrow:before {
+#sk-container-id-9 input.sk-toggleable__control:checked~label.sk-toggleable__label-arrow:before {
   content: "▾";
 }
 
 /* Pipeline/ColumnTransformer-specific style */
 
-#sk-container-id-45 div.sk-label input.sk-toggleable__control:checked~label.sk-toggleable__label {
+#sk-container-id-9 div.sk-label input.sk-toggleable__control:checked~label.sk-toggleable__label {
   color: var(--sklearn-color-text);
   background-color: var(--sklearn-color-unfitted-level-2);
 }
 
-#sk-container-id-45 div.sk-label.fitted input.sk-toggleable__control:checked~label.sk-toggleable__label {
+#sk-container-id-9 div.sk-label.fitted input.sk-toggleable__control:checked~label.sk-toggleable__label {
   background-color: var(--sklearn-color-fitted-level-2);
 }
 
 /* Estimator-specific style */
 
 /* Colorize estimator box */
-#sk-container-id-45 div.sk-estimator input.sk-toggleable__control:checked~label.sk-toggleable__label {
+#sk-container-id-9 div.sk-estimator input.sk-toggleable__control:checked~label.sk-toggleable__label {
   /* unfitted */
   background-color: var(--sklearn-color-unfitted-level-2);
 }
 
-#sk-container-id-45 div.sk-estimator.fitted input.sk-toggleable__control:checked~label.sk-toggleable__label {
+#sk-container-id-9 div.sk-estimator.fitted input.sk-toggleable__control:checked~label.sk-toggleable__label {
   /* fitted */
   background-color: var(--sklearn-color-fitted-level-2);
 }
 
-#sk-container-id-45 div.sk-label label.sk-toggleable__label,
-#sk-container-id-45 div.sk-label label {
+#sk-container-id-9 div.sk-label label.sk-toggleable__label,
+#sk-container-id-9 div.sk-label label {
   /* The background is the default theme color */
   color: var(--sklearn-color-text-on-default-background);
 }
 
 /* On hover, darken the color of the background */
-#sk-container-id-45 div.sk-label:hover label.sk-toggleable__label {
+#sk-container-id-9 div.sk-label:hover label.sk-toggleable__label {
   color: var(--sklearn-color-text);
   background-color: var(--sklearn-color-unfitted-level-2);
 }
 
 /* Label box, darken color on hover, fitted */
-#sk-container-id-45 div.sk-label.fitted:hover label.sk-toggleable__label.fitted {
+#sk-container-id-9 div.sk-label.fitted:hover label.sk-toggleable__label.fitted {
   color: var(--sklearn-color-text);
   background-color: var(--sklearn-color-fitted-level-2);
 }
 
 /* Estimator label */
 
-#sk-container-id-45 div.sk-label label {
+#sk-container-id-9 div.sk-label label {
   font-family: monospace;
   font-weight: bold;
   display: inline-block;
   line-height: 1.2em;
 }
 
-#sk-container-id-45 div.sk-label-container {
+#sk-container-id-9 div.sk-label-container {
   text-align: center;
 }
 
 /* Estimator-specific */
-#sk-container-id-45 div.sk-estimator {
+#sk-container-id-9 div.sk-estimator {
   font-family: monospace;
   border: 1px dotted var(--sklearn-color-border-box);
   border-radius: 0.25em;
@@ -2067,18 +2493,18 @@ clickable and can be expanded/collapsed.
   background-color: var(--sklearn-color-unfitted-level-0);
 }
 
-#sk-container-id-45 div.sk-estimator.fitted {
+#sk-container-id-9 div.sk-estimator.fitted {
   /* fitted */
   background-color: var(--sklearn-color-fitted-level-0);
 }
 
 /* on hover */
-#sk-container-id-45 div.sk-estimator:hover {
+#sk-container-id-9 div.sk-estimator:hover {
   /* unfitted */
   background-color: var(--sklearn-color-unfitted-level-2);
 }
 
-#sk-container-id-45 div.sk-estimator.fitted:hover {
+#sk-container-id-9 div.sk-estimator.fitted:hover {
   /* fitted */
   background-color: var(--sklearn-color-fitted-level-2);
 }
@@ -2166,7 +2592,7 @@ div.sk-label-container:hover .sk-estimator-doc-link.fitted:hover,
 
 /* "?"-specific style due to the `<a>` HTML tag */
 
-#sk-container-id-45 a.estimator_doc_link {
+#sk-container-id-9 a.estimator_doc_link {
   float: right;
   font-size: 1rem;
   line-height: 1em;
@@ -2181,955 +2607,216 @@ div.sk-label-container:hover .sk-estimator-doc-link.fitted:hover,
   border: var(--sklearn-color-unfitted-level-1) 1pt solid;
 }
 
-#sk-container-id-45 a.estimator_doc_link.fitted {
+#sk-container-id-9 a.estimator_doc_link.fitted {
   /* fitted */
   border: var(--sklearn-color-fitted-level-1) 1pt solid;
   color: var(--sklearn-color-fitted-level-1);
 }
 
 /* On hover */
-#sk-container-id-45 a.estimator_doc_link:hover {
+#sk-container-id-9 a.estimator_doc_link:hover {
   /* unfitted */
   background-color: var(--sklearn-color-unfitted-level-3);
   color: var(--sklearn-color-background);
   text-decoration: none;
 }
 
-#sk-container-id-45 a.estimator_doc_link.fitted:hover {
+#sk-container-id-9 a.estimator_doc_link.fitted:hover {
   /* fitted */
   background-color: var(--sklearn-color-fitted-level-3);
 }
 </style>
-<div id="sk-container-id-45" class="sk-top-container"><div class="sk-text-repr-fallback"><pre>LinearRegression()</pre><b>In a Jupyter environment, please rerun this cell to show the HTML representation or trust the notebook. <br />On GitHub, the HTML representation is unable to render, please try loading this page with nbviewer.org.</b></div><div class="sk-container" hidden><div class="sk-item"><div class="sk-estimator fitted sk-toggleable"><input class="sk-toggleable__control sk-hidden--visually" id="sk-estimator-id-45" type="checkbox" checked><label for="sk-estimator-id-45" class="sk-toggleable__label fitted sk-toggleable__label-arrow"><div><div>LinearRegression</div></div><div><a class="sk-estimator-doc-link fitted" rel="noreferrer" target="_blank" href="https://scikit-learn.org/1.6/modules/generated/sklearn.linear_model.LinearRegression.html">?<span>Documentation for LinearRegression</span></a><span class="sk-estimator-doc-link fitted">i<span>Fitted</span></span></div></label><div class="sk-toggleable__content fitted"><pre>LinearRegression()</pre></div> </div></div></div></div>
+<div id="sk-container-id-9" class="sk-top-container"><div class="sk-text-repr-fallback"><pre>KNeighborsClassifier(n_neighbors=1)</pre><b>In a Jupyter environment, please rerun this cell to show the HTML representation or trust the notebook. <br />On GitHub, the HTML representation is unable to render, please try loading this page with nbviewer.org.</b></div><div class="sk-container" hidden><div class="sk-item"><div class="sk-estimator fitted sk-toggleable"><input class="sk-toggleable__control sk-hidden--visually" id="sk-estimator-id-9" type="checkbox" checked><label for="sk-estimator-id-9" class="sk-toggleable__label fitted sk-toggleable__label-arrow"><div><div>KNeighborsClassifier</div></div><div><a class="sk-estimator-doc-link fitted" rel="noreferrer" target="_blank" href="https://scikit-learn.org/1.6/modules/generated/sklearn.neighbors.KNeighborsClassifier.html">?<span>Documentation for KNeighborsClassifier</span></a><span class="sk-estimator-doc-link fitted">i<span>Fitted</span></span></div></label><div class="sk-toggleable__content fitted"><pre>KNeighborsClassifier(n_neighbors=1)</pre></div> </div></div></div></div>
 
-<pre><code class="language-python">lambdas = 10**np.linspace(8, -4, 50)
-ridge = skl.RidgeCV(store_cv_results=True, alphas=lambdas)
-ridge.fit(X_train, y_train)
+<pre><code class="language-python">knn3 = KNeighborsClassifier(n_neighbors=3)
+knn3.fit(X_train, y_train)
+(knn3.predict(X_test) == y_test).mean()
 </code></pre>
-<style>#sk-container-id-46 {
-  /* Definition of color scheme common for light and dark mode */
-  --sklearn-color-text: #000;
-  --sklearn-color-text-muted: #666;
-  --sklearn-color-line: gray;
-  /* Definition of color scheme for unfitted estimators */
-  --sklearn-color-unfitted-level-0: #fff5e6;
-  --sklearn-color-unfitted-level-1: #f6e4d2;
-  --sklearn-color-unfitted-level-2: #ffe0b3;
-  --sklearn-color-unfitted-level-3: chocolate;
-  /* Definition of color scheme for fitted estimators */
-  --sklearn-color-fitted-level-0: #f0f8ff;
-  --sklearn-color-fitted-level-1: #d4ebff;
-  --sklearn-color-fitted-level-2: #b3dbfd;
-  --sklearn-color-fitted-level-3: cornflowerblue;
+<pre><code>0.5317460317460317
+</code></pre>
+<pre><code class="language-python">Caravan = load_data('Caravan')
+Purchase = Caravan.Purchase
+Purchase.value_counts()
+</code></pre>
+<pre><code>Purchase
+No     5474
+Yes     348
+Name: count, dtype: int64
+</code></pre>
+<pre><code class="language-python">caravan_df = Caravan.drop(columns=[&quot;Purchase&quot;])
+scaler = StandardScaler(copy=True)
+</code></pre>
+<pre><code class="language-python">scaler.fit(caravan_df)
+X_std = scaler.transform(caravan_df)
+</code></pre>
+<pre><code class="language-python">pd.DataFrame(X_std, columns=caravan_df.columns).std()
+</code></pre>
+<pre><code>MOSTYPE     1.000086
+MAANTHUI    1.000086
+MGEMOMV     1.000086
+MGEMLEEF    1.000086
+MOSHOOFD    1.000086
+              ...   
+AZEILPL     1.000086
+APLEZIER    1.000086
+AFIETS      1.000086
+AINBOED     1.000086
+ABYSTAND    1.000086
+Length: 85, dtype: float64
+</code></pre>
+<pre><code class="language-python">(X_train, X_test, y_train, y_test) = train_test_split(caravan_df, Purchase, test_size=1000, random_state=0)
+</code></pre>
+<pre><code class="language-python">knn1 = KNeighborsClassifier(n_neighbors=1)
+knn1.fit(X_train, y_train)
+(knn1.predict(X_test) == y_test).mean()
+</code></pre>
+<pre><code>0.879
+</code></pre>
+<pre><code class="language-python">knn3 = KNeighborsClassifier(n_neighbors=3)
+knn3.fit(X_train, y_train)
+(knn3.predict(X_test) == y_test).mean()
+</code></pre>
+<pre><code>0.923
+</code></pre>
+<pre><code class="language-python">confusion_table(knn1.predict(X_test), y_test)
+</code></pre>
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
 
-  /* Specific color for light theme */
-  --sklearn-color-text-on-default-background: var(--sg-text-color, var(--theme-code-foreground, var(--jp-content-font-color1, black)));
-  --sklearn-color-background: var(--sg-background-color, var(--theme-background, var(--jp-layout-color0, white)));
-  --sklearn-color-border-box: var(--sg-text-color, var(--theme-code-foreground, var(--jp-content-font-color1, black)));
-  --sklearn-color-icon: #696969;
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
 
-  @media (prefers-color-scheme: dark) {
-    /* Redefinition of color scheme for dark theme */
-    --sklearn-color-text-on-default-background: var(--sg-text-color, var(--theme-code-foreground, var(--jp-content-font-color1, white)));
-    --sklearn-color-background: var(--sg-background-color, var(--theme-background, var(--jp-layout-color0, #111)));
-    --sklearn-color-border-box: var(--sg-text-color, var(--theme-code-foreground, var(--jp-content-font-color1, white)));
-    --sklearn-color-icon: #878787;
-  }
-}
-
-#sk-container-id-46 {
-  color: var(--sklearn-color-text);
-}
-
-#sk-container-id-46 pre {
-  padding: 0;
-}
-
-#sk-container-id-46 input.sk-hidden--visually {
-  border: 0;
-  clip: rect(1px 1px 1px 1px);
-  clip: rect(1px, 1px, 1px, 1px);
-  height: 1px;
-  margin: -1px;
-  overflow: hidden;
-  padding: 0;
-  position: absolute;
-  width: 1px;
-}
-
-#sk-container-id-46 div.sk-dashed-wrapped {
-  border: 1px dashed var(--sklearn-color-line);
-  margin: 0 0.4em 0.5em 0.4em;
-  box-sizing: border-box;
-  padding-bottom: 0.4em;
-  background-color: var(--sklearn-color-background);
-}
-
-#sk-container-id-46 div.sk-container {
-  /* jupyter's `normalize.less` sets `[hidden] { display: none; }`
-     but bootstrap.min.css set `[hidden] { display: none !important; }`
-     so we also need the `!important` here to be able to override the
-     default hidden behavior on the sphinx rendered scikit-learn.org.
-     See: https://github.com/scikit-learn/scikit-learn/issues/21755 */
-  display: inline-block !important;
-  position: relative;
-}
-
-#sk-container-id-46 div.sk-text-repr-fallback {
-  display: none;
-}
-
-div.sk-parallel-item,
-div.sk-serial,
-div.sk-item {
-  /* draw centered vertical line to link estimators */
-  background-image: linear-gradient(var(--sklearn-color-text-on-default-background), var(--sklearn-color-text-on-default-background));
-  background-size: 2px 100%;
-  background-repeat: no-repeat;
-  background-position: center center;
-}
-
-/* Parallel-specific style estimator block */
-
-#sk-container-id-46 div.sk-parallel-item::after {
-  content: "";
-  width: 100%;
-  border-bottom: 2px solid var(--sklearn-color-text-on-default-background);
-  flex-grow: 1;
-}
-
-#sk-container-id-46 div.sk-parallel {
-  display: flex;
-  align-items: stretch;
-  justify-content: center;
-  background-color: var(--sklearn-color-background);
-  position: relative;
-}
-
-#sk-container-id-46 div.sk-parallel-item {
-  display: flex;
-  flex-direction: column;
-}
-
-#sk-container-id-46 div.sk-parallel-item:first-child::after {
-  align-self: flex-end;
-  width: 50%;
-}
-
-#sk-container-id-46 div.sk-parallel-item:last-child::after {
-  align-self: flex-start;
-  width: 50%;
-}
-
-#sk-container-id-46 div.sk-parallel-item:only-child::after {
-  width: 0;
-}
-
-/* Serial-specific style estimator block */
-
-#sk-container-id-46 div.sk-serial {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  background-color: var(--sklearn-color-background);
-  padding-right: 1em;
-  padding-left: 1em;
-}
-
-/* Toggleable style: style used for estimator/Pipeline/ColumnTransformer box that is
-clickable and can be expanded/collapsed.
-- Pipeline and ColumnTransformer use this feature and define the default style
-- Estimators will overwrite some part of the style using the `sk-estimator` class
-*/
-
-/* Pipeline and ColumnTransformer style (default) */
-
-#sk-container-id-46 div.sk-toggleable {
-  /* Default theme specific background. It is overwritten whether we have a
-  specific estimator or a Pipeline/ColumnTransformer */
-  background-color: var(--sklearn-color-background);
-}
-
-/* Toggleable label */
-#sk-container-id-46 label.sk-toggleable__label {
-  cursor: pointer;
-  display: flex;
-  width: 100%;
-  margin-bottom: 0;
-  padding: 0.5em;
-  box-sizing: border-box;
-  text-align: center;
-  align-items: start;
-  justify-content: space-between;
-  gap: 0.5em;
-}
-
-#sk-container-id-46 label.sk-toggleable__label .caption {
-  font-size: 0.6rem;
-  font-weight: lighter;
-  color: var(--sklearn-color-text-muted);
-}
-
-#sk-container-id-46 label.sk-toggleable__label-arrow:before {
-  /* Arrow on the left of the label */
-  content: "▸";
-  float: left;
-  margin-right: 0.25em;
-  color: var(--sklearn-color-icon);
-}
-
-#sk-container-id-46 label.sk-toggleable__label-arrow:hover:before {
-  color: var(--sklearn-color-text);
-}
-
-/* Toggleable content - dropdown */
-
-#sk-container-id-46 div.sk-toggleable__content {
-  max-height: 0;
-  max-width: 0;
-  overflow: hidden;
-  text-align: left;
-  /* unfitted */
-  background-color: var(--sklearn-color-unfitted-level-0);
-}
-
-#sk-container-id-46 div.sk-toggleable__content.fitted {
-  /* fitted */
-  background-color: var(--sklearn-color-fitted-level-0);
-}
-
-#sk-container-id-46 div.sk-toggleable__content pre {
-  margin: 0.2em;
-  border-radius: 0.25em;
-  color: var(--sklearn-color-text);
-  /* unfitted */
-  background-color: var(--sklearn-color-unfitted-level-0);
-}
-
-#sk-container-id-46 div.sk-toggleable__content.fitted pre {
-  /* unfitted */
-  background-color: var(--sklearn-color-fitted-level-0);
-}
-
-#sk-container-id-46 input.sk-toggleable__control:checked~div.sk-toggleable__content {
-  /* Expand drop-down */
-  max-height: 200px;
-  max-width: 100%;
-  overflow: auto;
-}
-
-#sk-container-id-46 input.sk-toggleable__control:checked~label.sk-toggleable__label-arrow:before {
-  content: "▾";
-}
-
-/* Pipeline/ColumnTransformer-specific style */
-
-#sk-container-id-46 div.sk-label input.sk-toggleable__control:checked~label.sk-toggleable__label {
-  color: var(--sklearn-color-text);
-  background-color: var(--sklearn-color-unfitted-level-2);
-}
-
-#sk-container-id-46 div.sk-label.fitted input.sk-toggleable__control:checked~label.sk-toggleable__label {
-  background-color: var(--sklearn-color-fitted-level-2);
-}
-
-/* Estimator-specific style */
-
-/* Colorize estimator box */
-#sk-container-id-46 div.sk-estimator input.sk-toggleable__control:checked~label.sk-toggleable__label {
-  /* unfitted */
-  background-color: var(--sklearn-color-unfitted-level-2);
-}
-
-#sk-container-id-46 div.sk-estimator.fitted input.sk-toggleable__control:checked~label.sk-toggleable__label {
-  /* fitted */
-  background-color: var(--sklearn-color-fitted-level-2);
-}
-
-#sk-container-id-46 div.sk-label label.sk-toggleable__label,
-#sk-container-id-46 div.sk-label label {
-  /* The background is the default theme color */
-  color: var(--sklearn-color-text-on-default-background);
-}
-
-/* On hover, darken the color of the background */
-#sk-container-id-46 div.sk-label:hover label.sk-toggleable__label {
-  color: var(--sklearn-color-text);
-  background-color: var(--sklearn-color-unfitted-level-2);
-}
-
-/* Label box, darken color on hover, fitted */
-#sk-container-id-46 div.sk-label.fitted:hover label.sk-toggleable__label.fitted {
-  color: var(--sklearn-color-text);
-  background-color: var(--sklearn-color-fitted-level-2);
-}
-
-/* Estimator label */
-
-#sk-container-id-46 div.sk-label label {
-  font-family: monospace;
-  font-weight: bold;
-  display: inline-block;
-  line-height: 1.2em;
-}
-
-#sk-container-id-46 div.sk-label-container {
-  text-align: center;
-}
-
-/* Estimator-specific */
-#sk-container-id-46 div.sk-estimator {
-  font-family: monospace;
-  border: 1px dotted var(--sklearn-color-border-box);
-  border-radius: 0.25em;
-  box-sizing: border-box;
-  margin-bottom: 0.5em;
-  /* unfitted */
-  background-color: var(--sklearn-color-unfitted-level-0);
-}
-
-#sk-container-id-46 div.sk-estimator.fitted {
-  /* fitted */
-  background-color: var(--sklearn-color-fitted-level-0);
-}
-
-/* on hover */
-#sk-container-id-46 div.sk-estimator:hover {
-  /* unfitted */
-  background-color: var(--sklearn-color-unfitted-level-2);
-}
-
-#sk-container-id-46 div.sk-estimator.fitted:hover {
-  /* fitted */
-  background-color: var(--sklearn-color-fitted-level-2);
-}
-
-/* Specification for estimator info (e.g. "i" and "?") */
-
-/* Common style for "i" and "?" */
-
-.sk-estimator-doc-link,
-a:link.sk-estimator-doc-link,
-a:visited.sk-estimator-doc-link {
-  float: right;
-  font-size: smaller;
-  line-height: 1em;
-  font-family: monospace;
-  background-color: var(--sklearn-color-background);
-  border-radius: 1em;
-  height: 1em;
-  width: 1em;
-  text-decoration: none !important;
-  margin-left: 0.5em;
-  text-align: center;
-  /* unfitted */
-  border: var(--sklearn-color-unfitted-level-1) 1pt solid;
-  color: var(--sklearn-color-unfitted-level-1);
-}
-
-.sk-estimator-doc-link.fitted,
-a:link.sk-estimator-doc-link.fitted,
-a:visited.sk-estimator-doc-link.fitted {
-  /* fitted */
-  border: var(--sklearn-color-fitted-level-1) 1pt solid;
-  color: var(--sklearn-color-fitted-level-1);
-}
-
-/* On hover */
-div.sk-estimator:hover .sk-estimator-doc-link:hover,
-.sk-estimator-doc-link:hover,
-div.sk-label-container:hover .sk-estimator-doc-link:hover,
-.sk-estimator-doc-link:hover {
-  /* unfitted */
-  background-color: var(--sklearn-color-unfitted-level-3);
-  color: var(--sklearn-color-background);
-  text-decoration: none;
-}
-
-div.sk-estimator.fitted:hover .sk-estimator-doc-link.fitted:hover,
-.sk-estimator-doc-link.fitted:hover,
-div.sk-label-container:hover .sk-estimator-doc-link.fitted:hover,
-.sk-estimator-doc-link.fitted:hover {
-  /* fitted */
-  background-color: var(--sklearn-color-fitted-level-3);
-  color: var(--sklearn-color-background);
-  text-decoration: none;
-}
-
-/* Span, style for the box shown on hovering the info icon */
-.sk-estimator-doc-link span {
-  display: none;
-  z-index: 9999;
-  position: relative;
-  font-weight: normal;
-  right: .2ex;
-  padding: .5ex;
-  margin: .5ex;
-  width: min-content;
-  min-width: 20ex;
-  max-width: 50ex;
-  color: var(--sklearn-color-text);
-  box-shadow: 2pt 2pt 4pt #999;
-  /* unfitted */
-  background: var(--sklearn-color-unfitted-level-0);
-  border: .5pt solid var(--sklearn-color-unfitted-level-3);
-}
-
-.sk-estimator-doc-link.fitted span {
-  /* fitted */
-  background: var(--sklearn-color-fitted-level-0);
-  border: var(--sklearn-color-fitted-level-3);
-}
-
-.sk-estimator-doc-link:hover span {
-  display: block;
-}
-
-/* "?"-specific style due to the `<a>` HTML tag */
-
-#sk-container-id-46 a.estimator_doc_link {
-  float: right;
-  font-size: 1rem;
-  line-height: 1em;
-  font-family: monospace;
-  background-color: var(--sklearn-color-background);
-  border-radius: 1rem;
-  height: 1rem;
-  width: 1rem;
-  text-decoration: none;
-  /* unfitted */
-  color: var(--sklearn-color-unfitted-level-1);
-  border: var(--sklearn-color-unfitted-level-1) 1pt solid;
-}
-
-#sk-container-id-46 a.estimator_doc_link.fitted {
-  /* fitted */
-  border: var(--sklearn-color-fitted-level-1) 1pt solid;
-  color: var(--sklearn-color-fitted-level-1);
-}
-
-/* On hover */
-#sk-container-id-46 a.estimator_doc_link:hover {
-  /* unfitted */
-  background-color: var(--sklearn-color-unfitted-level-3);
-  color: var(--sklearn-color-background);
-  text-decoration: none;
-}
-
-#sk-container-id-46 a.estimator_doc_link.fitted:hover {
-  /* fitted */
-  background-color: var(--sklearn-color-fitted-level-3);
-}
+    .dataframe thead th {
+        text-align: right;
+    }
 </style>
-<div id="sk-container-id-46" class="sk-top-container"><div class="sk-text-repr-fallback"><pre>RidgeCV(alphas=array([1.00000000e+08, 5.68986603e+07, 3.23745754e+07, 1.84206997e+07,
-       1.04811313e+07, 5.96362332e+06, 3.39322177e+06, 1.93069773e+06,
-       1.09854114e+06, 6.25055193e+05, 3.55648031e+05, 2.02358965e+05,
-       1.15139540e+05, 6.55128557e+04, 3.72759372e+04, 2.12095089e+04,
-       1.20679264e+04, 6.86648845e+03, 3.90693994e+03, 2.22299648e+03,
-       1.26485522e+03, 7.19685673e+0...
-       1.38949549e+01, 7.90604321e+00, 4.49843267e+00, 2.55954792e+00,
-       1.45634848e+00, 8.28642773e-01, 4.71486636e-01, 2.68269580e-01,
-       1.52641797e-01, 8.68511374e-02, 4.94171336e-02, 2.81176870e-02,
-       1.59985872e-02, 9.10298178e-03, 5.17947468e-03, 2.94705170e-03,
-       1.67683294e-03, 9.54095476e-04, 5.42867544e-04, 3.08884360e-04,
-       1.75751062e-04, 1.00000000e-04]),
-        store_cv_results=True)</pre><b>In a Jupyter environment, please rerun this cell to show the HTML representation or trust the notebook. <br />On GitHub, the HTML representation is unable to render, please try loading this page with nbviewer.org.</b></div><div class="sk-container" hidden><div class="sk-item"><div class="sk-estimator fitted sk-toggleable"><input class="sk-toggleable__control sk-hidden--visually" id="sk-estimator-id-46" type="checkbox" checked><label for="sk-estimator-id-46" class="sk-toggleable__label fitted sk-toggleable__label-arrow"><div><div>RidgeCV</div></div><div><a class="sk-estimator-doc-link fitted" rel="noreferrer" target="_blank" href="https://scikit-learn.org/1.6/modules/generated/sklearn.linear_model.RidgeCV.html">?<span>Documentation for RidgeCV</span></a><span class="sk-estimator-doc-link fitted">i<span>Fitted</span></span></div></label><div class="sk-toggleable__content fitted"><pre>RidgeCV(alphas=array([1.00000000e+08, 5.68986603e+07, 3.23745754e+07, 1.84206997e+07,
-       1.04811313e+07, 5.96362332e+06, 3.39322177e+06, 1.93069773e+06,
-       1.09854114e+06, 6.25055193e+05, 3.55648031e+05, 2.02358965e+05,
-       1.15139540e+05, 6.55128557e+04, 3.72759372e+04, 2.12095089e+04,
-       1.20679264e+04, 6.86648845e+03, 3.90693994e+03, 2.22299648e+03,
-       1.26485522e+03, 7.19685673e+0...
-       1.38949549e+01, 7.90604321e+00, 4.49843267e+00, 2.55954792e+00,
-       1.45634848e+00, 8.28642773e-01, 4.71486636e-01, 2.68269580e-01,
-       1.52641797e-01, 8.68511374e-02, 4.94171336e-02, 2.81176870e-02,
-       1.59985872e-02, 9.10298178e-03, 5.17947468e-03, 2.94705170e-03,
-       1.67683294e-03, 9.54095476e-04, 5.42867544e-04, 3.08884360e-04,
-       1.75751062e-04, 1.00000000e-04]),
-        store_cv_results=True)</pre></div> </div></div></div></div>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th>Truth</th>
+      <th>No</th>
+      <th>Yes</th>
+    </tr>
+    <tr>
+      <th>Predicted</th>
+      <th></th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>No</th>
+      <td>874</td>
+      <td>62</td>
+    </tr>
+    <tr>
+      <th>Yes</th>
+      <td>59</td>
+      <td>5</td>
+    </tr>
+  </tbody>
+</table>
+</div>
 
-<pre><code class="language-python">lasso = skl.LassoCV(alphas=lambdas)
-lasso.fit(X_train, y_train)
+<pre><code class="language-python">logit = LogisticRegression(C=1e10, solver='liblinear')
+logit.fit(X_train, y_train)
+logit_pred = logit.predict(X_test)
+confusion_table(logit_pred, y_test)
 </code></pre>
-<pre><code>/home/luqman/Lab/islp/venv/lib/python3.12/site-packages/sklearn/linear_model/_coordinate_descent.py:681: ConvergenceWarning: Objective did not converge. You might want to increase the number of iterations. Duality gap: 3.0755285832929076, tolerance: 2.846651969885279
-  model = cd_fast.enet_coordinate_descent_gram(
-/home/luqman/Lab/islp/venv/lib/python3.12/site-packages/sklearn/linear_model/_coordinate_descent.py:681: ConvergenceWarning: Objective did not converge. You might want to increase the number of iterations. Duality gap: 6.7432737100110245, tolerance: 2.846651969885279
-  model = cd_fast.enet_coordinate_descent_gram(
-/home/luqman/Lab/islp/venv/lib/python3.12/site-packages/sklearn/linear_model/_coordinate_descent.py:681: ConvergenceWarning: Objective did not converge. You might want to increase the number of iterations. Duality gap: 4.874157984353236, tolerance: 2.846651969885279
-  model = cd_fast.enet_coordinate_descent_gram(
-/home/luqman/Lab/islp/venv/lib/python3.12/site-packages/sklearn/linear_model/_coordinate_descent.py:681: ConvergenceWarning: Objective did not converge. You might want to increase the number of iterations. Duality gap: 3.0295505120977353, tolerance: 2.846651969885279
-  model = cd_fast.enet_coordinate_descent_gram(
-/home/luqman/Lab/islp/venv/lib/python3.12/site-packages/sklearn/linear_model/_coordinate_descent.py:681: ConvergenceWarning: Objective did not converge. You might want to increase the number of iterations. Duality gap: 7.022669248395857, tolerance: 2.840656590789062
-  model = cd_fast.enet_coordinate_descent_gram(
-/home/luqman/Lab/islp/venv/lib/python3.12/site-packages/sklearn/linear_model/_coordinate_descent.py:681: ConvergenceWarning: Objective did not converge. You might want to increase the number of iterations. Duality gap: 4.990998055406692, tolerance: 2.840656590789062
-  model = cd_fast.enet_coordinate_descent_gram(
-/home/luqman/Lab/islp/venv/lib/python3.12/site-packages/sklearn/linear_model/_coordinate_descent.py:681: ConvergenceWarning: Objective did not converge. You might want to increase the number of iterations. Duality gap: 10.156596903410318, tolerance: 2.840656590789062
-  model = cd_fast.enet_coordinate_descent_gram(
-/home/luqman/Lab/islp/venv/lib/python3.12/site-packages/sklearn/linear_model/_coordinate_descent.py:681: ConvergenceWarning: Objective did not converge. You might want to increase the number of iterations. Duality gap: 7.411234382614303, tolerance: 2.840656590789062
-  model = cd_fast.enet_coordinate_descent_gram(
-/home/luqman/Lab/islp/venv/lib/python3.12/site-packages/sklearn/linear_model/_coordinate_descent.py:681: ConvergenceWarning: Objective did not converge. You might want to increase the number of iterations. Duality gap: 4.6001418198169475, tolerance: 2.840656590789062
-  model = cd_fast.enet_coordinate_descent_gram(
-</code></pre>
-<style>#sk-container-id-47 {
-  /* Definition of color scheme common for light and dark mode */
-  --sklearn-color-text: #000;
-  --sklearn-color-text-muted: #666;
-  --sklearn-color-line: gray;
-  /* Definition of color scheme for unfitted estimators */
-  --sklearn-color-unfitted-level-0: #fff5e6;
-  --sklearn-color-unfitted-level-1: #f6e4d2;
-  --sklearn-color-unfitted-level-2: #ffe0b3;
-  --sklearn-color-unfitted-level-3: chocolate;
-  /* Definition of color scheme for fitted estimators */
-  --sklearn-color-fitted-level-0: #f0f8ff;
-  --sklearn-color-fitted-level-1: #d4ebff;
-  --sklearn-color-fitted-level-2: #b3dbfd;
-  --sklearn-color-fitted-level-3: cornflowerblue;
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
 
-  /* Specific color for light theme */
-  --sklearn-color-text-on-default-background: var(--sg-text-color, var(--theme-code-foreground, var(--jp-content-font-color1, black)));
-  --sklearn-color-background: var(--sg-background-color, var(--theme-background, var(--jp-layout-color0, white)));
-  --sklearn-color-border-box: var(--sg-text-color, var(--theme-code-foreground, var(--jp-content-font-color1, black)));
-  --sklearn-color-icon: #696969;
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
 
-  @media (prefers-color-scheme: dark) {
-    /* Redefinition of color scheme for dark theme */
-    --sklearn-color-text-on-default-background: var(--sg-text-color, var(--theme-code-foreground, var(--jp-content-font-color1, white)));
-    --sklearn-color-background: var(--sg-background-color, var(--theme-background, var(--jp-layout-color0, #111)));
-    --sklearn-color-border-box: var(--sg-text-color, var(--theme-code-foreground, var(--jp-content-font-color1, white)));
-    --sklearn-color-icon: #878787;
-  }
-}
-
-#sk-container-id-47 {
-  color: var(--sklearn-color-text);
-}
-
-#sk-container-id-47 pre {
-  padding: 0;
-}
-
-#sk-container-id-47 input.sk-hidden--visually {
-  border: 0;
-  clip: rect(1px 1px 1px 1px);
-  clip: rect(1px, 1px, 1px, 1px);
-  height: 1px;
-  margin: -1px;
-  overflow: hidden;
-  padding: 0;
-  position: absolute;
-  width: 1px;
-}
-
-#sk-container-id-47 div.sk-dashed-wrapped {
-  border: 1px dashed var(--sklearn-color-line);
-  margin: 0 0.4em 0.5em 0.4em;
-  box-sizing: border-box;
-  padding-bottom: 0.4em;
-  background-color: var(--sklearn-color-background);
-}
-
-#sk-container-id-47 div.sk-container {
-  /* jupyter's `normalize.less` sets `[hidden] { display: none; }`
-     but bootstrap.min.css set `[hidden] { display: none !important; }`
-     so we also need the `!important` here to be able to override the
-     default hidden behavior on the sphinx rendered scikit-learn.org.
-     See: https://github.com/scikit-learn/scikit-learn/issues/21755 */
-  display: inline-block !important;
-  position: relative;
-}
-
-#sk-container-id-47 div.sk-text-repr-fallback {
-  display: none;
-}
-
-div.sk-parallel-item,
-div.sk-serial,
-div.sk-item {
-  /* draw centered vertical line to link estimators */
-  background-image: linear-gradient(var(--sklearn-color-text-on-default-background), var(--sklearn-color-text-on-default-background));
-  background-size: 2px 100%;
-  background-repeat: no-repeat;
-  background-position: center center;
-}
-
-/* Parallel-specific style estimator block */
-
-#sk-container-id-47 div.sk-parallel-item::after {
-  content: "";
-  width: 100%;
-  border-bottom: 2px solid var(--sklearn-color-text-on-default-background);
-  flex-grow: 1;
-}
-
-#sk-container-id-47 div.sk-parallel {
-  display: flex;
-  align-items: stretch;
-  justify-content: center;
-  background-color: var(--sklearn-color-background);
-  position: relative;
-}
-
-#sk-container-id-47 div.sk-parallel-item {
-  display: flex;
-  flex-direction: column;
-}
-
-#sk-container-id-47 div.sk-parallel-item:first-child::after {
-  align-self: flex-end;
-  width: 50%;
-}
-
-#sk-container-id-47 div.sk-parallel-item:last-child::after {
-  align-self: flex-start;
-  width: 50%;
-}
-
-#sk-container-id-47 div.sk-parallel-item:only-child::after {
-  width: 0;
-}
-
-/* Serial-specific style estimator block */
-
-#sk-container-id-47 div.sk-serial {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  background-color: var(--sklearn-color-background);
-  padding-right: 1em;
-  padding-left: 1em;
-}
-
-/* Toggleable style: style used for estimator/Pipeline/ColumnTransformer box that is
-clickable and can be expanded/collapsed.
-- Pipeline and ColumnTransformer use this feature and define the default style
-- Estimators will overwrite some part of the style using the `sk-estimator` class
-*/
-
-/* Pipeline and ColumnTransformer style (default) */
-
-#sk-container-id-47 div.sk-toggleable {
-  /* Default theme specific background. It is overwritten whether we have a
-  specific estimator or a Pipeline/ColumnTransformer */
-  background-color: var(--sklearn-color-background);
-}
-
-/* Toggleable label */
-#sk-container-id-47 label.sk-toggleable__label {
-  cursor: pointer;
-  display: flex;
-  width: 100%;
-  margin-bottom: 0;
-  padding: 0.5em;
-  box-sizing: border-box;
-  text-align: center;
-  align-items: start;
-  justify-content: space-between;
-  gap: 0.5em;
-}
-
-#sk-container-id-47 label.sk-toggleable__label .caption {
-  font-size: 0.6rem;
-  font-weight: lighter;
-  color: var(--sklearn-color-text-muted);
-}
-
-#sk-container-id-47 label.sk-toggleable__label-arrow:before {
-  /* Arrow on the left of the label */
-  content: "▸";
-  float: left;
-  margin-right: 0.25em;
-  color: var(--sklearn-color-icon);
-}
-
-#sk-container-id-47 label.sk-toggleable__label-arrow:hover:before {
-  color: var(--sklearn-color-text);
-}
-
-/* Toggleable content - dropdown */
-
-#sk-container-id-47 div.sk-toggleable__content {
-  max-height: 0;
-  max-width: 0;
-  overflow: hidden;
-  text-align: left;
-  /* unfitted */
-  background-color: var(--sklearn-color-unfitted-level-0);
-}
-
-#sk-container-id-47 div.sk-toggleable__content.fitted {
-  /* fitted */
-  background-color: var(--sklearn-color-fitted-level-0);
-}
-
-#sk-container-id-47 div.sk-toggleable__content pre {
-  margin: 0.2em;
-  border-radius: 0.25em;
-  color: var(--sklearn-color-text);
-  /* unfitted */
-  background-color: var(--sklearn-color-unfitted-level-0);
-}
-
-#sk-container-id-47 div.sk-toggleable__content.fitted pre {
-  /* unfitted */
-  background-color: var(--sklearn-color-fitted-level-0);
-}
-
-#sk-container-id-47 input.sk-toggleable__control:checked~div.sk-toggleable__content {
-  /* Expand drop-down */
-  max-height: 200px;
-  max-width: 100%;
-  overflow: auto;
-}
-
-#sk-container-id-47 input.sk-toggleable__control:checked~label.sk-toggleable__label-arrow:before {
-  content: "▾";
-}
-
-/* Pipeline/ColumnTransformer-specific style */
-
-#sk-container-id-47 div.sk-label input.sk-toggleable__control:checked~label.sk-toggleable__label {
-  color: var(--sklearn-color-text);
-  background-color: var(--sklearn-color-unfitted-level-2);
-}
-
-#sk-container-id-47 div.sk-label.fitted input.sk-toggleable__control:checked~label.sk-toggleable__label {
-  background-color: var(--sklearn-color-fitted-level-2);
-}
-
-/* Estimator-specific style */
-
-/* Colorize estimator box */
-#sk-container-id-47 div.sk-estimator input.sk-toggleable__control:checked~label.sk-toggleable__label {
-  /* unfitted */
-  background-color: var(--sklearn-color-unfitted-level-2);
-}
-
-#sk-container-id-47 div.sk-estimator.fitted input.sk-toggleable__control:checked~label.sk-toggleable__label {
-  /* fitted */
-  background-color: var(--sklearn-color-fitted-level-2);
-}
-
-#sk-container-id-47 div.sk-label label.sk-toggleable__label,
-#sk-container-id-47 div.sk-label label {
-  /* The background is the default theme color */
-  color: var(--sklearn-color-text-on-default-background);
-}
-
-/* On hover, darken the color of the background */
-#sk-container-id-47 div.sk-label:hover label.sk-toggleable__label {
-  color: var(--sklearn-color-text);
-  background-color: var(--sklearn-color-unfitted-level-2);
-}
-
-/* Label box, darken color on hover, fitted */
-#sk-container-id-47 div.sk-label.fitted:hover label.sk-toggleable__label.fitted {
-  color: var(--sklearn-color-text);
-  background-color: var(--sklearn-color-fitted-level-2);
-}
-
-/* Estimator label */
-
-#sk-container-id-47 div.sk-label label {
-  font-family: monospace;
-  font-weight: bold;
-  display: inline-block;
-  line-height: 1.2em;
-}
-
-#sk-container-id-47 div.sk-label-container {
-  text-align: center;
-}
-
-/* Estimator-specific */
-#sk-container-id-47 div.sk-estimator {
-  font-family: monospace;
-  border: 1px dotted var(--sklearn-color-border-box);
-  border-radius: 0.25em;
-  box-sizing: border-box;
-  margin-bottom: 0.5em;
-  /* unfitted */
-  background-color: var(--sklearn-color-unfitted-level-0);
-}
-
-#sk-container-id-47 div.sk-estimator.fitted {
-  /* fitted */
-  background-color: var(--sklearn-color-fitted-level-0);
-}
-
-/* on hover */
-#sk-container-id-47 div.sk-estimator:hover {
-  /* unfitted */
-  background-color: var(--sklearn-color-unfitted-level-2);
-}
-
-#sk-container-id-47 div.sk-estimator.fitted:hover {
-  /* fitted */
-  background-color: var(--sklearn-color-fitted-level-2);
-}
-
-/* Specification for estimator info (e.g. "i" and "?") */
-
-/* Common style for "i" and "?" */
-
-.sk-estimator-doc-link,
-a:link.sk-estimator-doc-link,
-a:visited.sk-estimator-doc-link {
-  float: right;
-  font-size: smaller;
-  line-height: 1em;
-  font-family: monospace;
-  background-color: var(--sklearn-color-background);
-  border-radius: 1em;
-  height: 1em;
-  width: 1em;
-  text-decoration: none !important;
-  margin-left: 0.5em;
-  text-align: center;
-  /* unfitted */
-  border: var(--sklearn-color-unfitted-level-1) 1pt solid;
-  color: var(--sklearn-color-unfitted-level-1);
-}
-
-.sk-estimator-doc-link.fitted,
-a:link.sk-estimator-doc-link.fitted,
-a:visited.sk-estimator-doc-link.fitted {
-  /* fitted */
-  border: var(--sklearn-color-fitted-level-1) 1pt solid;
-  color: var(--sklearn-color-fitted-level-1);
-}
-
-/* On hover */
-div.sk-estimator:hover .sk-estimator-doc-link:hover,
-.sk-estimator-doc-link:hover,
-div.sk-label-container:hover .sk-estimator-doc-link:hover,
-.sk-estimator-doc-link:hover {
-  /* unfitted */
-  background-color: var(--sklearn-color-unfitted-level-3);
-  color: var(--sklearn-color-background);
-  text-decoration: none;
-}
-
-div.sk-estimator.fitted:hover .sk-estimator-doc-link.fitted:hover,
-.sk-estimator-doc-link.fitted:hover,
-div.sk-label-container:hover .sk-estimator-doc-link.fitted:hover,
-.sk-estimator-doc-link.fitted:hover {
-  /* fitted */
-  background-color: var(--sklearn-color-fitted-level-3);
-  color: var(--sklearn-color-background);
-  text-decoration: none;
-}
-
-/* Span, style for the box shown on hovering the info icon */
-.sk-estimator-doc-link span {
-  display: none;
-  z-index: 9999;
-  position: relative;
-  font-weight: normal;
-  right: .2ex;
-  padding: .5ex;
-  margin: .5ex;
-  width: min-content;
-  min-width: 20ex;
-  max-width: 50ex;
-  color: var(--sklearn-color-text);
-  box-shadow: 2pt 2pt 4pt #999;
-  /* unfitted */
-  background: var(--sklearn-color-unfitted-level-0);
-  border: .5pt solid var(--sklearn-color-unfitted-level-3);
-}
-
-.sk-estimator-doc-link.fitted span {
-  /* fitted */
-  background: var(--sklearn-color-fitted-level-0);
-  border: var(--sklearn-color-fitted-level-3);
-}
-
-.sk-estimator-doc-link:hover span {
-  display: block;
-}
-
-/* "?"-specific style due to the `<a>` HTML tag */
-
-#sk-container-id-47 a.estimator_doc_link {
-  float: right;
-  font-size: 1rem;
-  line-height: 1em;
-  font-family: monospace;
-  background-color: var(--sklearn-color-background);
-  border-radius: 1rem;
-  height: 1rem;
-  width: 1rem;
-  text-decoration: none;
-  /* unfitted */
-  color: var(--sklearn-color-unfitted-level-1);
-  border: var(--sklearn-color-unfitted-level-1) 1pt solid;
-}
-
-#sk-container-id-47 a.estimator_doc_link.fitted {
-  /* fitted */
-  border: var(--sklearn-color-fitted-level-1) 1pt solid;
-  color: var(--sklearn-color-fitted-level-1);
-}
-
-/* On hover */
-#sk-container-id-47 a.estimator_doc_link:hover {
-  /* unfitted */
-  background-color: var(--sklearn-color-unfitted-level-3);
-  color: var(--sklearn-color-background);
-  text-decoration: none;
-}
-
-#sk-container-id-47 a.estimator_doc_link.fitted:hover {
-  /* fitted */
-  background-color: var(--sklearn-color-fitted-level-3);
-}
+    .dataframe thead th {
+        text-align: right;
+    }
 </style>
-<div id="sk-container-id-47" class="sk-top-container"><div class="sk-text-repr-fallback"><pre>LassoCV(alphas=array([1.00000000e+08, 5.68986603e+07, 3.23745754e+07, 1.84206997e+07,
-       1.04811313e+07, 5.96362332e+06, 3.39322177e+06, 1.93069773e+06,
-       1.09854114e+06, 6.25055193e+05, 3.55648031e+05, 2.02358965e+05,
-       1.15139540e+05, 6.55128557e+04, 3.72759372e+04, 2.12095089e+04,
-       1.20679264e+04, 6.86648845e+03, 3.90693994e+03, 2.22299648e+03,
-       1.26485522e+03, 7.19685673e+0...
-       1.32571137e+02, 7.54312006e+01, 4.29193426e+01, 2.44205309e+01,
-       1.38949549e+01, 7.90604321e+00, 4.49843267e+00, 2.55954792e+00,
-       1.45634848e+00, 8.28642773e-01, 4.71486636e-01, 2.68269580e-01,
-       1.52641797e-01, 8.68511374e-02, 4.94171336e-02, 2.81176870e-02,
-       1.59985872e-02, 9.10298178e-03, 5.17947468e-03, 2.94705170e-03,
-       1.67683294e-03, 9.54095476e-04, 5.42867544e-04, 3.08884360e-04,
-       1.75751062e-04, 1.00000000e-04]))</pre><b>In a Jupyter environment, please rerun this cell to show the HTML representation or trust the notebook. <br />On GitHub, the HTML representation is unable to render, please try loading this page with nbviewer.org.</b></div><div class="sk-container" hidden><div class="sk-item"><div class="sk-estimator fitted sk-toggleable"><input class="sk-toggleable__control sk-hidden--visually" id="sk-estimator-id-47" type="checkbox" checked><label for="sk-estimator-id-47" class="sk-toggleable__label fitted sk-toggleable__label-arrow"><div><div>LassoCV</div></div><div><a class="sk-estimator-doc-link fitted" rel="noreferrer" target="_blank" href="https://scikit-learn.org/1.6/modules/generated/sklearn.linear_model.LassoCV.html">?<span>Documentation for LassoCV</span></a><span class="sk-estimator-doc-link fitted">i<span>Fitted</span></span></div></label><div class="sk-toggleable__content fitted"><pre>LassoCV(alphas=array([1.00000000e+08, 5.68986603e+07, 3.23745754e+07, 1.84206997e+07,
-       1.04811313e+07, 5.96362332e+06, 3.39322177e+06, 1.93069773e+06,
-       1.09854114e+06, 6.25055193e+05, 3.55648031e+05, 2.02358965e+05,
-       1.15139540e+05, 6.55128557e+04, 3.72759372e+04, 2.12095089e+04,
-       1.20679264e+04, 6.86648845e+03, 3.90693994e+03, 2.22299648e+03,
-       1.26485522e+03, 7.19685673e+0...
-       1.32571137e+02, 7.54312006e+01, 4.29193426e+01, 2.44205309e+01,
-       1.38949549e+01, 7.90604321e+00, 4.49843267e+00, 2.55954792e+00,
-       1.45634848e+00, 8.28642773e-01, 4.71486636e-01, 2.68269580e-01,
-       1.52641797e-01, 8.68511374e-02, 4.94171336e-02, 2.81176870e-02,
-       1.59985872e-02, 9.10298178e-03, 5.17947468e-03, 2.94705170e-03,
-       1.67683294e-03, 9.54095476e-04, 5.42867544e-04, 3.08884360e-04,
-       1.75751062e-04, 1.00000000e-04]))</pre></div> </div></div></div></div>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th>Truth</th>
+      <th>No</th>
+      <th>Yes</th>
+    </tr>
+    <tr>
+      <th>Predicted</th>
+      <th></th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>No</th>
+      <td>931</td>
+      <td>67</td>
+    </tr>
+    <tr>
+      <th>Yes</th>
+      <td>2</td>
+      <td>0</td>
+    </tr>
+  </tbody>
+</table>
+</div>
 
-<h2 id="regularization-results">Regularization results</h2>
-<ul>
-<li>There is too much variance in this model because we only using 5 points to create a line with 3 variable.</li>
-<li>Even linear regression model are to overfit for this extreme settings.</li>
-<li>regularization help us to reduce a variance with tradeoff of some bias. Both ridge and lasso did pretty good with 70% R2.</li>
-</ul>
-<pre><code class="language-python">R2(lr.predict(X_test), y_test), R2(ridge.predict(X_test), y_test), R2(lasso.predict(X_test), y_test)
+<pre><code class="language-python">logit = LogisticRegression(C=1e10 , solver='liblinear')
+logit.fit(X_train , y_train)
+logit_pred = logit.predict_proba(X_test)
+logit_labels = np.where(logit_pred [:,1] &gt; 0.15, 'Yes', 'No')
+confusion_table(logit_labels , y_test)
 </code></pre>
-<pre><code>(0.3761038971902325, 0.716650314401583, 0.7400452801921802)
-</code></pre>
-<pre><code class="language-python">lr.coef_, ridge.coef_, lasso.coef_
-</code></pre>
-<pre><code>(array([-68.5520653 , -21.42043405,   1.78968729]),
- array([-11.68913854, -13.61503784,  -9.40388045]),
- array([ -0.        , -11.18693772, -11.5483712 ]))
-</code></pre>
-<pre><code class="language-python">ridge.alpha_, lasso.alpha_
-</code></pre>
-<pre><code>(0.8286427728546859, 4.498432668969444)
-</code></pre>
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th>Truth</th>
+      <th>No</th>
+      <th>Yes</th>
+    </tr>
+    <tr>
+      <th>Predicted</th>
+      <th></th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>No</th>
+      <td>876</td>
+      <td>49</td>
+    </tr>
+    <tr>
+      <th>Yes</th>
+      <td>57</td>
+      <td>18</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
 <pre><code class="language-python">
 </code></pre>
 <pre><code class="language-python">

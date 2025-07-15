@@ -13,6 +13,8 @@
       
       
       
+        <link rel="prev" href="..">
+      
       
       
       <link rel="icon" href="../assets/images/favicon.png">
@@ -20,7 +22,7 @@
     
     
       
-        <title>Linear and Polynom SVM from scratch - ML Journey — Muhammad Luqman Hakim</title>
+        <title>About - ML Journey — Muhammad Luqman Hakim</title>
       
     
     
@@ -72,7 +74,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#linear-and-polynom-svm-from-scratch" class="md-skip">
+        <a href="#muhammad-luqman-hakim" class="md-skip">
           Skip to content
         </a>
       
@@ -106,7 +108,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Linear and Polynom SVM from scratch
+              About
             
           </span>
         </div>
@@ -208,9 +210,11 @@
   
   
   
+    
   
-    <li class="md-tabs__item">
-      <a href="../about/" class="md-tabs__link">
+  
+    <li class="md-tabs__item md-tabs__item--active">
+      <a href="./" class="md-tabs__link">
         
   
   
@@ -282,10 +286,32 @@
       
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="../about/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    About
+    
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         
   
   
@@ -296,6 +322,44 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#highlights" class="md-nav__link">
+    <span class="md-ellipsis">
+      🔍 Highlights
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#contact" class="md-nav__link">
+    <span class="md-ellipsis">
+      📫 Contact
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -327,9 +391,18 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#we-use-the-iris-dataset" class="md-nav__link">
+  <a href="#highlights" class="md-nav__link">
     <span class="md-ellipsis">
-      We use the iris dataset
+      🔍 Highlights
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#contact" class="md-nav__link">
+    <span class="md-ellipsis">
+      📫 Contact
     </span>
   </a>
   
@@ -351,246 +424,29 @@
 
 
 
-<h1 id="linear-and-polynom-svm-from-scratch">Linear and Polynom SVM from scratch</h1>
-<p>We will create SVM using the loss function and do the gradient descend manually</p>
-<pre><code class="language-python">import numpy as np
-import pandas as pd
-import seaborn as sns
-from matplotlib import pyplot as plt
-from sklearn.model_selection import train_test_split
-</code></pre>
-<pre><code class="language-python">df = pd.read_csv(&quot;dataset/Iris.csv&quot;, index_col=&quot;Id&quot;)
-</code></pre>
-<h2 id="we-use-the-iris-dataset">We use the iris dataset</h2>
-<p>But to make things simple we only classify is it iris setosa or not, because iris versicolor and iris virginica is'nt linearly separable</p>
-<pre><code class="language-python">sns.pairplot(df, hue=&quot;Species&quot;)
-plt.show()
-</code></pre>
-<p><img alt="png" src="../LinearSVM%20and%20PolynomSVM%20from%20scratch_files/LinearSVM%20and%20PolynomSVM%20from%20scratch_4_0.png" /></p>
-<pre><code class="language-python">x = np.array(df.drop(columns=[&quot;Species&quot;, &quot;SepalLengthCm&quot;, &quot;SepalWidthCm&quot;]))
-y = np.array([s == 'Iris-setosa' for s in df[&quot;Species&quot;]])
-</code></pre>
-<pre><code class="language-python">from sklearn.preprocessing import StandardScaler
-
-X_train, X_test, Y_train, Y_test = train_test_split(x, y, stratify=y, random_state=7)
-# scaler = StandardScaler()
-# X_train = scaler.fit_transform(X_train)
-</code></pre>
-<pre><code class="language-python">def perceptron(lx, ly, maxiter=1000):
-    theta = np.zeros(len(lx[0]), dtype=float)
-    theta_0 = 0
-
-    history = []
-    for _ in range(maxiter):
-        count = 0
-        for x, y in zip(lx, ly):
-            y = 1 if bool(y) else -1
-            z = y * np.dot(theta, x) + theta_0
-            if z &lt;= 0:
-                theta += y * x
-                theta_0 += y
-                history.append(np.copy(theta))
-                count += 1
-        if count == 0:
-            break
-    return theta_0, theta
-</code></pre>
-<pre><code class="language-python">theta_0, theta = perceptron(X_train, Y_train)
-</code></pre>
-<pre><code class="language-python">count = 0
-# X_test = scaler.transform(X_test)
-for x, y in zip(X_test, Y_test):
-    z = theta_0 + np.dot(x, theta)
-    count += ((z &gt; 0) and y)
-    count += ((z &lt; 0) and not y)
-</code></pre>
-<pre><code class="language-python">count/len(Y_test)
-</code></pre>
-<pre><code>0.5263157894736842
-</code></pre>
-<pre><code class="language-python">theta
-</code></pre>
-<pre><code>array([-0.1, -2.2])
-</code></pre>
-<pre><code class="language-python">theta_0
-</code></pre>
-<pre><code>5
-</code></pre>
-<pre><code class="language-python">
-</code></pre>
-<pre><code class="language-python">class LinearSVM:
-    def __init__(self, lx, ly):
-        self.theta = np.zeros(len(lx[0]), dtype=float)
-        self.theta_0 = 0
-        self.lmbd = 0.1
-        self.lr = 0.001
-        self.maxiter=1000
-        self.lx = lx
-        self.ly = ly
-
-    def transform_data(self, func):
-        self.lx = np.apply_along_axis(func, 1, self.lx)
-        self.theta = np.zeros(len(self.lx[0]), dtype=float)
-
-    def train(self):
-        history = []
-        for _ in range(self.maxiter):
-            count = 0
-            for x, y in zip(self.lx, self.ly):
-                y = 1 if bool(y) else -1
-                z = 1 - (y * (np.dot(self.theta, x) + self.theta_0))
-                gradient_theta = self.dregterm_dtheta(x)
-                gradient_theta_0 = 0
-                if z &gt; 0:
-                    gradient_theta += self.dlossterm_dtheta(x, y)
-                    gradient_theta_0 += self.dlossterm_dtheta_0(y)
-                    count += 1
-                self.theta -= gradient_theta * self.lr
-                self.theta_0 -= gradient_theta_0 * self.lr
-
-                history.append(np.copy(self.theta))
-            # if count == 0:
-            #     break
-        # print(history)
-        return self.theta_0, self.theta
-
-    def dregterm_dtheta(self, x):
-        return self.lmbd * self.theta
-
-    def dlossterm_dtheta(self, x, y):
-        return -y*x
-
-    def dlossterm_dtheta_0(self, y):
-        return -y
-
-    def predict(self, lx_test, ly_test):
-        count = 0
-        for x, y in zip(lx_test, ly_test):
-            z = self.theta_0 + np.dot(x, self.theta)
-            count += ((z &gt; 0) and y)
-            count += ((z &lt; 0) and not y)
-        return count / len(lx_test)
-
-    def plot(self):
-        # Plot data points
-        plt.scatter(self.lxx[:, 0], self.lxx[:, 1], c=self.lyy, cmap=plt.cm.Paired, edgecolors='k', label='Data Points')
-
-        # Plot decision boundary
-        x1 = np.linspace(min(self.lxx[:, 0]), max(self.lxx[:, 0]), 100)
-        x2 = -(self.theta[0] * x1 + self.theta_0) / self.theta[1]
-        plt.plot(x1, x2, 'k-', label='Decision Boundary')
-
-        # Plot margin boundaries
-        margin = 1 / np.linalg.norm(self.theta)
-        x2_upper = x2 + margin / np.linalg.norm(self.theta)
-        x2_lower = x2 - margin / np.linalg.norm(self.theta)
-        plt.plot(x1, x2_upper, 'k--', label='Margin Boundary', color=&quot;red&quot;)
-        plt.plot(x1, x2_lower, 'k--', color=&quot;red&quot;)
-
-        # Add labels and legend
-        plt.xlabel('Feature 1')
-        plt.ylabel('Feature 2')
-        plt.title('Linear SVM Decision and Margin Boundaries')
-        plt.legend()
-        plt.show()
-
-</code></pre>
-<pre><code class="language-python">s = LinearSVM(X_train, Y_train)
-</code></pre>
-<pre><code class="language-python">s.train()
-</code></pre>
-<pre><code>(-0.8530000000000006, array([-0.83165633, -0.66812085]))
-</code></pre>
-<pre><code class="language-python">s.predict(X_test, Y_test)
-</code></pre>
-<pre><code>np.float64(1.0)
-</code></pre>
-<pre><code class="language-python">s.plot()
-</code></pre>
-<pre><code>/tmp/ipykernel_4050/4131259921.py:68: UserWarning: color is redundantly defined by the 'color' keyword argument and the fmt string "k--" (-&gt; color='k'). The keyword argument will take precedence.
-  plt.plot(x1, x2_upper, 'k--', label='Margin Boundary', color="red")
-/tmp/ipykernel_4050/4131259921.py:69: UserWarning: color is redundantly defined by the 'color' keyword argument and the fmt string "k--" (-&gt; color='k'). The keyword argument will take precedence.
-  plt.plot(x1, x2_lower, 'k--', color="red")
-</code></pre>
-<p><img alt="png" src="../LinearSVM%20and%20PolynomSVM%20from%20scratch_files/LinearSVM%20and%20PolynomSVM%20from%20scratch_18_1.png" /></p>
-<pre><code class="language-python">import numpy as np
-import matplotlib.pyplot as plt
-
-class PolynomSVM:
-    def __init__(self, lx, ly):
-        self.copy_lx = lx
-        self.lx = np.apply_along_axis(self.polynom, 1, lx)
-        self.theta = np.zeros(len(self.lx[0]), dtype=float)
-        self.theta_0 = 0
-        self.lmbd = 0.9
-        self.lr = 0.001
-        self.maxiter = 1000
-        self.ly = ly
-
-    @staticmethod
-    def polynom(arr):
-        s = np.sqrt(2)
-        return np.array([s * arr[0], s * arr[1], arr[0] ** 2, arr[1] ** 2, s * arr[0] * arr[1], 1])
-
-    def train(self):
-        for _ in range(self.maxiter):
-            for x, y in zip(self.lx, self.ly):
-                y = 1 if bool(y) else -1
-                z = 1 - (y * (np.dot(self.theta, x) + self.theta_0))
-                gradient_theta = self.lmbd * self.theta
-                gradient_theta_0 = 0
-                if z &gt; 0:
-                    gradient_theta -= y * x
-                    gradient_theta_0 -= y
-                self.theta -= gradient_theta * self.lr
-                self.theta_0 -= gradient_theta_0 * self.lr
-        return self.theta_0, self.theta
-
-    def predict(self, lx_test, ly_test):
-        lx_test = np.apply_along_axis(self.polynom, 1, lx_test)
-        predictions = np.dot(lx_test, self.theta) + self.theta_0
-        correct_predictions = ((predictions &gt; 0) == ly_test).sum()
-        print((predictions&gt;0).sum())
-        print(len(lx_test))
-        return correct_predictions / len(lx_test)
-
-    def plot(self):
-        x_min, x_max = self.copy_lx[:, 0].min() - 1, self.copy_lx[:, 0].max() + 1
-        y_min, y_max = self.copy_lx[:, 1].min() - 1, self.copy_lx[:, 1].max() + 1
-        xx, yy = np.meshgrid(np.linspace(x_min, x_max, 200), np.linspace(y_min, y_max, 200))
-
-        grid = np.c_[xx.ravel(), yy.ravel()]
-        grid_transformed = np.apply_along_axis(self.polynom, 1, grid)
-        zz = np.dot(grid_transformed, self.theta) + self.theta_0
-        zz = zz.reshape(xx.shape)
-
-        plt.contourf(xx, yy, zz, levels=[-1, 0, 1], alpha=0.2, colors=[&quot;blue&quot;, &quot;black&quot;, &quot;red&quot;])
-        plt.contour(xx, yy, zz, levels=[-1, 0, 1], colors=[&quot;blue&quot;, &quot;black&quot;, &quot;red&quot;], linestyles=[&quot;dashed&quot;, &quot;solid&quot;, &quot;dashed&quot;])
-
-        plt.scatter(self.copy_lx[:, 0], self.copy_lx[:, 1], c=self.ly, cmap=plt.cm.Paired, edgecolors='k')
-        plt.xlabel(&quot;Feature 1&quot;)
-        plt.ylabel(&quot;Feature 2&quot;)
-        plt.title(&quot;Polynomial SVM Decision Boundary&quot;)
-        plt.show()
-</code></pre>
-<pre><code class="language-python">s = PolynomSVM(X_train, Y_train)
-</code></pre>
-<pre><code class="language-python">s.train()
-</code></pre>
-<pre><code>(-0.8980000000000007,
- array([-0.29973561, -0.27545061,  0.1579069 ,  0.10840018,  0.19147607,
-        -0.00051781]))
-</code></pre>
-<pre><code class="language-python">s.plot()
-</code></pre>
-<p><img alt="png" src="../LinearSVM%20and%20PolynomSVM%20from%20scratch_files/LinearSVM%20and%20PolynomSVM%20from%20scratch_22_0.png" /></p>
-<pre><code class="language-python">s.predict(X_test, Y_test)
-</code></pre>
-<pre><code>13
-38
-
-np.float64(1.0)
-</code></pre>
+<h1 id="muhammad-luqman-hakim">👋 Muhammad Luqman Hakim</h1>
+<p>🎓 Computer Science Student | 🤖 Machine Learning Enthusiast<br />
+📍 IPB University | 💡 Lifelong Learner  </p>
+<hr />
+<p>Welcome to my Machine Learning Journey — a space where I document the projects, lessons, and experiments I've explored as I deepen my understanding of data-driven systems.</p>
+<p>My focus lies in:
+- Building intelligent systems using neural networks and deep learning.
+- Solving real-world problems with predictive models.
+- Bridging theory and practice through hands-on experimentation.</p>
+<hr />
+<h2 id="highlights">🔍 Highlights</h2>
+<ul>
+<li>📈 Applied time series models for financial data forecasting.</li>
+<li>📝 Conducted sentiment analysis using NLP and TF-IDF/Embeddings.</li>
+<li>🧠 Built Simple Machine Learning but using Neural Network.</li>
+</ul>
+<hr />
+<h2 id="contact">📫 Contact</h2>
+<ul>
+<li>📧 Email: <a href="mailto:hakim.luqman.muhammad@gmail.com">hakim.luqman.muhammad@gmail.com</a>  </li>
+<li>💬 WhatsApp: <a href="https://wa.me/6285778598244">wa.me/6285778598244</a></li>
+</ul>
+<hr />
 
 
 

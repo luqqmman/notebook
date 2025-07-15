@@ -20,7 +20,7 @@
     
     
       
-        <title>Linear and Polynom SVM from scratch - ML Journey — Muhammad Luqman Hakim</title>
+        <title>Polynomial Logistic Regression - ML Journey — Muhammad Luqman Hakim</title>
       
     
     
@@ -71,11 +71,6 @@
     <label class="md-overlay" for="__drawer"></label>
     <div data-md-component="skip">
       
-        
-        <a href="#linear-and-polynom-svm-from-scratch" class="md-skip">
-          Skip to content
-        </a>
-      
     </div>
     <div data-md-component="announce">
       
@@ -106,7 +101,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Linear and Polynom SVM from scratch
+              Polynomial Logistic Regression
             
           </span>
         </div>
@@ -317,25 +312,6 @@
   
   
   
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#we-use-the-iris-dataset" class="md-nav__link">
-    <span class="md-ellipsis">
-      We use the iris dataset
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
   
 </nav>
                   </div>
@@ -351,245 +327,107 @@
 
 
 
-<h1 id="linear-and-polynom-svm-from-scratch">Linear and Polynom SVM from scratch</h1>
-<p>We will create SVM using the loss function and do the gradient descend manually</p>
-<pre><code class="language-python">import numpy as np
+  <h1>Polynomial Logistic Regression</h1>
+
+<ol>
+<li>We have seen that we can fit an SVM with a non-linear kernel in order
+to perform classification using a non-linear decision boundary. We will
+now see that we can also obtain a non-linear decision boundary by
+performing logistic regression using non-linear transformations of the
+features</li>
+<li>Generate a data set with n = 500 and p = 2, such that the obser-
+vations belong to two classes with a quadratic decision boundary
+between them. For instance, you can do this as follows:
+rng = np.random.default_rng (5)
+x1 = rng.uniform(size =500) - 0.5
+x2 = rng.uniform(size =500) - 0.5
+y = x1<strong>2 - x2</strong>2 &gt; 0</li>
+<li>Plot the observations, colored according to their class labels.
+Your plot should display X1 on the x-axis, and X2 on the y-
+axis.</li>
+<li>Fit a logistic regression model to the data, using X1 and X2 as
+predictors.
+    Apply this model to the training data in order to obtain a pre-
+dicted class label for each training observation. Plot the ob-
+servations, colored according to the predicted class labels. The
+decision boundary should be linear.</li>
+<li>Now fit a logistic regression model to the data using non-linear
+functions of X1 and X2 as predictors (e.g. X2
+1 , X1 ×X2, log(X2),
+and so forth).</li>
+<li>Apply this model to the training data in order to obtain a pre-
+dicted class label for each training observation. Plot the ob-
+servations, colored according to the predicted class labels. The
+decision boundary should be obviously non-linear. If it is not,
+then repeat (a)–(e) until you come up with an example in which
+the predicted class labels are obviously non-linear.</li>
+<li>Fit a support vector classifier to the data with X1 and X2 as
+predictors. Obtain a class prediction for each training observa-
+tion. Plot the observations, colored according to the predicted
+class labels.</li>
+<li>Fit a SVM using a non-linear kernel to the data. Obtain a class
+prediction for each training observation. Plot the observations,
+colored according to the predicted class labels.</li>
+<li>Comment on your results.</li>
+</ol>
+<pre><code class="language-python">import numpy as np 
 import pandas as pd
-import seaborn as sns
-from matplotlib import pyplot as plt
-from sklearn.model_selection import train_test_split
-</code></pre>
-<pre><code class="language-python">df = pd.read_csv(&quot;dataset/Iris.csv&quot;, index_col=&quot;Id&quot;)
-</code></pre>
-<h2 id="we-use-the-iris-dataset">We use the iris dataset</h2>
-<p>But to make things simple we only classify is it iris setosa or not, because iris versicolor and iris virginica is'nt linearly separable</p>
-<pre><code class="language-python">sns.pairplot(df, hue=&quot;Species&quot;)
-plt.show()
-</code></pre>
-<p><img alt="png" src="../LinearSVM%20and%20PolynomSVM%20from%20scratch_files/LinearSVM%20and%20PolynomSVM%20from%20scratch_4_0.png" /></p>
-<pre><code class="language-python">x = np.array(df.drop(columns=[&quot;Species&quot;, &quot;SepalLengthCm&quot;, &quot;SepalWidthCm&quot;]))
-y = np.array([s == 'Iris-setosa' for s in df[&quot;Species&quot;]])
-</code></pre>
-<pre><code class="language-python">from sklearn.preprocessing import StandardScaler
+import sklearn.model_selection as skm
 
-X_train, X_test, Y_train, Y_test = train_test_split(x, y, stratify=y, random_state=7)
-# scaler = StandardScaler()
-# X_train = scaler.fit_transform(X_train)
+from sklearn.svm import SVC, SVR
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import accuracy_score, confusion_matrix, RocCurveDisplay
+from matplotlib.pyplot import subplots
+from ISLP import load_data
+from ISLP.svm import plot as plot_svm
 </code></pre>
-<pre><code class="language-python">def perceptron(lx, ly, maxiter=1000):
-    theta = np.zeros(len(lx[0]), dtype=float)
-    theta_0 = 0
+<pre><code class="language-python">rng = np.random.default_rng(0)
+x1 = rng.standard_normal(500)
+x2 = rng.standard_normal(500)
 
-    history = []
-    for _ in range(maxiter):
-        count = 0
-        for x, y in zip(lx, ly):
-            y = 1 if bool(y) else -1
-            z = y * np.dot(theta, x) + theta_0
-            if z &lt;= 0:
-                theta += y * x
-                theta_0 += y
-                history.append(np.copy(theta))
-                count += 1
-        if count == 0:
-            break
-    return theta_0, theta
+X = np.array([x1, x2]).T
+y = X[:,0]**2 - X[:,1]&gt;1
+X[:,1][y] -= 1
 </code></pre>
-<pre><code class="language-python">theta_0, theta = perceptron(X_train, Y_train)
+<pre><code class="language-python">fig, ax = subplots(figsize=(4,4))
+ax.scatter(X[:,0], X[:,1], c=y)
 </code></pre>
-<pre><code class="language-python">count = 0
-# X_test = scaler.transform(X_test)
-for x, y in zip(X_test, Y_test):
-    z = theta_0 + np.dot(x, theta)
-    count += ((z &gt; 0) and y)
-    count += ((z &lt; 0) and not y)
+<pre><code>&lt;matplotlib.collections.PathCollection at 0x7038467794c0&gt;
 </code></pre>
-<pre><code class="language-python">count/len(Y_test)
+<p><img alt="png" src="../Polynomial%20Logistic%20Regression_files/Polynomial%20Logistic%20Regression_3_1.png" /></p>
+<pre><code class="language-python">X_train, X_test, y_train, y_test = skm.train_test_split(X, y, shuffle=True, stratify=y, random_state=0)
+lr_linear = LogisticRegression()
+lr_linear.fit(X_train, y_train)
+lr_linear_pred = lr_linear.predict(X_test)
+accuracy_score(y_test, lr_linear_pred)
 </code></pre>
-<pre><code>0.5263157894736842
+<pre><code>0.896
 </code></pre>
-<pre><code class="language-python">theta
+<pre><code class="language-python">fig, ax = subplots(figsize=(4,4))
+ax.scatter(X[:,0], X[:,1], c=lr_linear.predict(X))
 </code></pre>
-<pre><code>array([-0.1, -2.2])
+<pre><code>&lt;matplotlib.collections.PathCollection at 0x703846912420&gt;
 </code></pre>
-<pre><code class="language-python">theta_0
+<p><img alt="png" src="../Polynomial%20Logistic%20Regression_files/Polynomial%20Logistic%20Regression_5_1.png" /></p>
+<pre><code class="language-python">X = np.array([x1, x2, x1*x2, x1**2, x2**2]).T
+X[:,1][y] -= 1
+y = X[:,0]**2 - X[:,1]&gt;1
+
+X_train, X_test, y_train, y_test = skm.train_test_split(X, y, shuffle=True, stratify=y, random_state=0)
+lr_poly = LogisticRegression()
+lr_poly.fit(X_train, y_train)
+lr_poly_pred = lr_poly.predict(X_test)
+accuracy_score(y_test, lr_poly_pred)
 </code></pre>
-<pre><code>5
+<pre><code>1.0
 </code></pre>
+<pre><code class="language-python">fig, ax = subplots(figsize=(4,4))
+ax.scatter(X[:,0], X[:,1], c=lr_poly.predict(X))
+</code></pre>
+<pre><code>&lt;matplotlib.collections.PathCollection at 0x703845e4c050&gt;
+</code></pre>
+<p><img alt="png" src="../Polynomial%20Logistic%20Regression_files/Polynomial%20Logistic%20Regression_7_1.png" /></p>
 <pre><code class="language-python">
-</code></pre>
-<pre><code class="language-python">class LinearSVM:
-    def __init__(self, lx, ly):
-        self.theta = np.zeros(len(lx[0]), dtype=float)
-        self.theta_0 = 0
-        self.lmbd = 0.1
-        self.lr = 0.001
-        self.maxiter=1000
-        self.lx = lx
-        self.ly = ly
-
-    def transform_data(self, func):
-        self.lx = np.apply_along_axis(func, 1, self.lx)
-        self.theta = np.zeros(len(self.lx[0]), dtype=float)
-
-    def train(self):
-        history = []
-        for _ in range(self.maxiter):
-            count = 0
-            for x, y in zip(self.lx, self.ly):
-                y = 1 if bool(y) else -1
-                z = 1 - (y * (np.dot(self.theta, x) + self.theta_0))
-                gradient_theta = self.dregterm_dtheta(x)
-                gradient_theta_0 = 0
-                if z &gt; 0:
-                    gradient_theta += self.dlossterm_dtheta(x, y)
-                    gradient_theta_0 += self.dlossterm_dtheta_0(y)
-                    count += 1
-                self.theta -= gradient_theta * self.lr
-                self.theta_0 -= gradient_theta_0 * self.lr
-
-                history.append(np.copy(self.theta))
-            # if count == 0:
-            #     break
-        # print(history)
-        return self.theta_0, self.theta
-
-    def dregterm_dtheta(self, x):
-        return self.lmbd * self.theta
-
-    def dlossterm_dtheta(self, x, y):
-        return -y*x
-
-    def dlossterm_dtheta_0(self, y):
-        return -y
-
-    def predict(self, lx_test, ly_test):
-        count = 0
-        for x, y in zip(lx_test, ly_test):
-            z = self.theta_0 + np.dot(x, self.theta)
-            count += ((z &gt; 0) and y)
-            count += ((z &lt; 0) and not y)
-        return count / len(lx_test)
-
-    def plot(self):
-        # Plot data points
-        plt.scatter(self.lxx[:, 0], self.lxx[:, 1], c=self.lyy, cmap=plt.cm.Paired, edgecolors='k', label='Data Points')
-
-        # Plot decision boundary
-        x1 = np.linspace(min(self.lxx[:, 0]), max(self.lxx[:, 0]), 100)
-        x2 = -(self.theta[0] * x1 + self.theta_0) / self.theta[1]
-        plt.plot(x1, x2, 'k-', label='Decision Boundary')
-
-        # Plot margin boundaries
-        margin = 1 / np.linalg.norm(self.theta)
-        x2_upper = x2 + margin / np.linalg.norm(self.theta)
-        x2_lower = x2 - margin / np.linalg.norm(self.theta)
-        plt.plot(x1, x2_upper, 'k--', label='Margin Boundary', color=&quot;red&quot;)
-        plt.plot(x1, x2_lower, 'k--', color=&quot;red&quot;)
-
-        # Add labels and legend
-        plt.xlabel('Feature 1')
-        plt.ylabel('Feature 2')
-        plt.title('Linear SVM Decision and Margin Boundaries')
-        plt.legend()
-        plt.show()
-
-</code></pre>
-<pre><code class="language-python">s = LinearSVM(X_train, Y_train)
-</code></pre>
-<pre><code class="language-python">s.train()
-</code></pre>
-<pre><code>(-0.8530000000000006, array([-0.83165633, -0.66812085]))
-</code></pre>
-<pre><code class="language-python">s.predict(X_test, Y_test)
-</code></pre>
-<pre><code>np.float64(1.0)
-</code></pre>
-<pre><code class="language-python">s.plot()
-</code></pre>
-<pre><code>/tmp/ipykernel_4050/4131259921.py:68: UserWarning: color is redundantly defined by the 'color' keyword argument and the fmt string "k--" (-&gt; color='k'). The keyword argument will take precedence.
-  plt.plot(x1, x2_upper, 'k--', label='Margin Boundary', color="red")
-/tmp/ipykernel_4050/4131259921.py:69: UserWarning: color is redundantly defined by the 'color' keyword argument and the fmt string "k--" (-&gt; color='k'). The keyword argument will take precedence.
-  plt.plot(x1, x2_lower, 'k--', color="red")
-</code></pre>
-<p><img alt="png" src="../LinearSVM%20and%20PolynomSVM%20from%20scratch_files/LinearSVM%20and%20PolynomSVM%20from%20scratch_18_1.png" /></p>
-<pre><code class="language-python">import numpy as np
-import matplotlib.pyplot as plt
-
-class PolynomSVM:
-    def __init__(self, lx, ly):
-        self.copy_lx = lx
-        self.lx = np.apply_along_axis(self.polynom, 1, lx)
-        self.theta = np.zeros(len(self.lx[0]), dtype=float)
-        self.theta_0 = 0
-        self.lmbd = 0.9
-        self.lr = 0.001
-        self.maxiter = 1000
-        self.ly = ly
-
-    @staticmethod
-    def polynom(arr):
-        s = np.sqrt(2)
-        return np.array([s * arr[0], s * arr[1], arr[0] ** 2, arr[1] ** 2, s * arr[0] * arr[1], 1])
-
-    def train(self):
-        for _ in range(self.maxiter):
-            for x, y in zip(self.lx, self.ly):
-                y = 1 if bool(y) else -1
-                z = 1 - (y * (np.dot(self.theta, x) + self.theta_0))
-                gradient_theta = self.lmbd * self.theta
-                gradient_theta_0 = 0
-                if z &gt; 0:
-                    gradient_theta -= y * x
-                    gradient_theta_0 -= y
-                self.theta -= gradient_theta * self.lr
-                self.theta_0 -= gradient_theta_0 * self.lr
-        return self.theta_0, self.theta
-
-    def predict(self, lx_test, ly_test):
-        lx_test = np.apply_along_axis(self.polynom, 1, lx_test)
-        predictions = np.dot(lx_test, self.theta) + self.theta_0
-        correct_predictions = ((predictions &gt; 0) == ly_test).sum()
-        print((predictions&gt;0).sum())
-        print(len(lx_test))
-        return correct_predictions / len(lx_test)
-
-    def plot(self):
-        x_min, x_max = self.copy_lx[:, 0].min() - 1, self.copy_lx[:, 0].max() + 1
-        y_min, y_max = self.copy_lx[:, 1].min() - 1, self.copy_lx[:, 1].max() + 1
-        xx, yy = np.meshgrid(np.linspace(x_min, x_max, 200), np.linspace(y_min, y_max, 200))
-
-        grid = np.c_[xx.ravel(), yy.ravel()]
-        grid_transformed = np.apply_along_axis(self.polynom, 1, grid)
-        zz = np.dot(grid_transformed, self.theta) + self.theta_0
-        zz = zz.reshape(xx.shape)
-
-        plt.contourf(xx, yy, zz, levels=[-1, 0, 1], alpha=0.2, colors=[&quot;blue&quot;, &quot;black&quot;, &quot;red&quot;])
-        plt.contour(xx, yy, zz, levels=[-1, 0, 1], colors=[&quot;blue&quot;, &quot;black&quot;, &quot;red&quot;], linestyles=[&quot;dashed&quot;, &quot;solid&quot;, &quot;dashed&quot;])
-
-        plt.scatter(self.copy_lx[:, 0], self.copy_lx[:, 1], c=self.ly, cmap=plt.cm.Paired, edgecolors='k')
-        plt.xlabel(&quot;Feature 1&quot;)
-        plt.ylabel(&quot;Feature 2&quot;)
-        plt.title(&quot;Polynomial SVM Decision Boundary&quot;)
-        plt.show()
-</code></pre>
-<pre><code class="language-python">s = PolynomSVM(X_train, Y_train)
-</code></pre>
-<pre><code class="language-python">s.train()
-</code></pre>
-<pre><code>(-0.8980000000000007,
- array([-0.29973561, -0.27545061,  0.1579069 ,  0.10840018,  0.19147607,
-        -0.00051781]))
-</code></pre>
-<pre><code class="language-python">s.plot()
-</code></pre>
-<p><img alt="png" src="../LinearSVM%20and%20PolynomSVM%20from%20scratch_files/LinearSVM%20and%20PolynomSVM%20from%20scratch_22_0.png" /></p>
-<pre><code class="language-python">s.predict(X_test, Y_test)
-</code></pre>
-<pre><code>13
-38
-
-np.float64(1.0)
 </code></pre>
 
 

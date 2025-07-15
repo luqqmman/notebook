@@ -1,95 +1,433 @@
-<!DOCTYPE html>
-<html lang="en" data-bs-theme="light">
-    <head>
-        <meta charset="utf-8">
-        <meta http-equiv="X-UA-Compatible" content="IE=edge">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Portfolio and learning journal of a machine learning enthusiast">
+      
+      
+        <meta name="author" content="Muhammad Luqman Hakim">
+      
+      
+      
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.15">
+    
+    
+      
+        <title>Sentiment analysis with Logistic Regression, SVM, Binomial Naive Bayes, and Deep Learning on Presidential Debate - ML Journey — Muhammad Luqman Hakim</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.342714a4.min.css">
+      
         
-        
-        
-        <link rel="shortcut icon" href="../img/favicon.ico">
-        <title>Sentiment analysis with SVM and Binomial NB on Presidential Debate - ML journey</title>
-        <link href="../css/bootstrap.min.css" rel="stylesheet">
-        <link href="../css/fontawesome.min.css" rel="stylesheet">
-        <link href="../css/brands.min.css" rel="stylesheet">
-        <link href="../css/solid.min.css" rel="stylesheet">
-        <link href="../css/v4-font-face.min.css" rel="stylesheet">
-        <link href="../css/base.css" rel="stylesheet">
-        <link id="hljs-light" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" >
-        <link id="hljs-dark" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github-dark.min.css" disabled>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
-        <script>hljs.highlightAll();</script> 
-    </head>
+        <link rel="stylesheet" href="../assets/stylesheets/palette.06af60db.min.css">
+      
+      
 
-    <body>
-        <div class="navbar fixed-top navbar-expand-lg navbar-dark bg-primary">
-            <div class="container">
-                <a class="navbar-brand" href="..">ML journey</a>
-
-                <!-- Expanded navigation -->
-                <div id="navbar-collapse" class="navbar-collapse collapse">
-
-                    <ul class="nav navbar-nav ms-md-auto">
-                        <li class="nav-item">
-                            <a href="#" class="nav-link" data-bs-toggle="modal" data-bs-target="#mkdocs_search_modal">
-                                <i class="fa fa-search"></i> Search
-                            </a>
-                        </li>
-                    </ul>
-                </div>
-            </div>
-        </div>
-
-        <div class="container">
-            <div class="row">
-                    <div class="col-md-3"><div class="navbar-expand-md bs-sidebar hidden-print affix" role="complementary">
-    <div class="navbar-header">
-        <button type="button" class="navbar-toggler collapsed" data-bs-toggle="collapse" data-bs-target="#toc-collapse" title="Table of Contents">
-            <span class="fa fa-angle-down"></span>
-        </button>
-    </div>
 
     
-    <div id="toc-collapse" class="navbar-collapse collapse card bg-body-tertiary">
-        <ul class="nav flex-column">
-            
-            <li class="nav-item" data-bs-level="1"><a href="#sentiment-analysis-with-svm-and-binomial-nb-on-presidential-debate" class="nav-link">Sentiment analysis with SVM and Binomial NB on Presidential Debate</a>
-              <ul class="nav flex-column">
-            <li class="nav-item" data-bs-level="2"><a href="#first-we-downsample-the-data-to-stratify-the-class" class="nav-link">First we downsample the data to stratify the class</a>
-              <ul class="nav flex-column">
-              </ul>
-            </li>
-            <li class="nav-item" data-bs-level="2"><a href="#next-we-clean-the-data" class="nav-link">Next we clean the data</a>
-              <ul class="nav flex-column">
-              </ul>
-            </li>
-            <li class="nav-item" data-bs-level="2"><a href="#next-we-do-vectorization-with-tfidf" class="nav-link">Next we do vectorization with tfidf</a>
-              <ul class="nav flex-column">
-              </ul>
-            </li>
-            <li class="nav-item" data-bs-level="2"><a href="#comparing-model" class="nav-link">Comparing model</a>
-              <ul class="nav flex-column">
-              </ul>
-            </li>
-            <li class="nav-item" data-bs-level="2"><a href="#most-sentiment-word" class="nav-link">Most "sentiment" word</a>
-              <ul class="nav flex-column">
-              </ul>
-            </li>
-              </ul>
-            </li>
-        </ul>
-    </div>
-</div></div>
-                    <div class="col-md-9" role="main">
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
 
-<h1 id="sentiment-analysis-with-svm-and-binomial-nb-on-presidential-debate">Sentiment analysis with SVM and Binomial NB on Presidential Debate</h1>
-<p>This exercise derived from Data Mining project in my college but i improvise with SVM. My team scraped and manually label the data before, so we just need to do some preprocess.</p>
+    
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#sentiment-analysis-with-logistic-regression-svm-binomial-naive-bayes-and-deep-learning-on-presidential-debate" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="ML Journey — Muhammad Luqman Hakim" class="md-header__button md-logo" aria-label="ML Journey — Muhammad Luqman Hakim" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            ML Journey — Muhammad Luqman Hakim
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Sentiment analysis with Logistic Regression, SVM, Binomial Naive Bayes, and Deep Learning on Presidential Debate
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="indigo"  aria-hidden="true"  type="radio" name="__palette" id="__palette_0">
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href=".." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../about/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  About
+
+      </a>
+    </li>
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="ML Journey — Muhammad Luqman Hakim" class="md-nav__button md-logo" aria-label="ML Journey — Muhammad Luqman Hakim" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    ML Journey — Muhammad Luqman Hakim
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Home
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../about/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    About
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#first-we-downsample-the-data-to-stratify-the-class" class="md-nav__link">
+    <span class="md-ellipsis">
+      First we downsample the data to stratify the class
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#next-we-clean-the-data" class="md-nav__link">
+    <span class="md-ellipsis">
+      Next we clean the data
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#next-we-do-vectorization-with-tfidf" class="md-nav__link">
+    <span class="md-ellipsis">
+      Next we do vectorization with tfidf
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#comparing-model" class="md-nav__link">
+    <span class="md-ellipsis">
+      Comparing model
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#what-we-got-before-continuing-to-deep-learning" class="md-nav__link">
+    <span class="md-ellipsis">
+      What we got, before continuing to deep learning
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="What we got, before continuing to deep learning">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#most-sentiment-word-according-to-logistic-regression-weight" class="md-nav__link">
+    <span class="md-ellipsis">
+      Most "sentiment" word according to Logistic Regression weight
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#deep-learning" class="md-nav__link">
+    <span class="md-ellipsis">
+      Deep learning
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#conclusion" class="md-nav__link">
+    <span class="md-ellipsis">
+      Conclusion
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="sentiment-analysis-with-logistic-regression-svm-binomial-naive-bayes-and-deep-learning-on-presidential-debate">Sentiment analysis with Logistic Regression, SVM, Binomial Naive Bayes, and Deep Learning on Presidential Debate</h1>
+<p>This exercise derived from Data Mining project in my college but i remaster it with SVM and Deep Learning. My team scraped and manually label the data before, so we just need to do a little preprocess here.</p>
 <pre><code class="language-python">import pandas as pd
 </code></pre>
 <pre><code class="language-python">pd.set_option('display.max_colwidth', None)
 df = pd.read_csv(&quot;dataset/president_debate.csv&quot;)
 df = df.dropna()
-df
+df.head()
 </code></pre>
 <div>
 <style scoped>
@@ -139,39 +477,8 @@ df
       <td>1.0</td>
       <td>@tempodotco Selalu suka sama pembawaannya pak Anies yang adem apalagi pas debat semalem beliau keliatan tenang dan sudah mempersiapkan diri banget yuk bisa AMIN 1 putaran aja https://t.co/5RtE6Zop33</td>
     </tr>
-    <tr>
-      <th>...</th>
-      <td>...</td>
-      <td>...</td>
-    </tr>
-    <tr>
-      <th>1063</th>
-      <td>1.0</td>
-      <td>Tetapi itikad kita baik saya kira 3 paslon semuanya ingin yang terbaik untuk rakyat Indonesia kata Prabowo dalam pernyataan penutupnya di sesi debat kelima Pilpres 2024 yang digelar di Jakarta Convention Center (JCC) Jakarta Minggu (4/2).</td>
-    </tr>
-    <tr>
-      <th>1064</th>
-      <td>1.0</td>
-      <td>@kompascom @aniesbaswedan Pak Anies berhasil bikin debat semalam jadi punya nuansa berbeda keren parah!</td>
-    </tr>
-    <tr>
-      <th>1066</th>
-      <td>1.0</td>
-      <td>@kompascom @aniesbaswedan Debat semalam semakin berkesan dengan pesona dan kata-kata positif dari Pak Anies!</td>
-    </tr>
-    <tr>
-      <th>1067</th>
-      <td>1.0</td>
-      <td>@IDNTimes kalo melihat dari debat capres terakhir kemarin aku bakalan mantepin hatiku buat pilih Ganjar-Mahfud</td>
-    </tr>
-    <tr>
-      <th>1068</th>
-      <td>1.0</td>
-      <td>@raffimulyaa Nah kalo menurut orang2 debat kemarin gak asik krn ga panas. Menurut gue pak Anies pake strategi yang bagus buat debat terakhir ini. Ada remnya dan mengedepankan apa yang bakal dilakuin sebagai calon presiden kedepan. Masalahnya kl ngegoreng kyk sblmnya dah kelar kewarasan kita</td>
-    </tr>
   </tbody>
 </table>
-<p>1018 rows × 2 columns</p>
 </div>
 
 <pre><code class="language-python">df['label'].value_counts()
@@ -201,15 +508,11 @@ nltk.download('punkt')
 nltk.download('stopwords')
 </code></pre>
 <pre><code>[nltk_data] Downloading package punkt_tab to /home/luqman/nltk_data...
-[nltk_data]   Unzipping tokenizers/punkt_tab.zip.
+[nltk_data]   Package punkt_tab is already up-to-date!
 [nltk_data] Downloading package punkt to /home/luqman/nltk_data...
 [nltk_data]   Package punkt is already up-to-date!
 [nltk_data] Downloading package stopwords to /home/luqman/nltk_data...
 [nltk_data]   Package stopwords is already up-to-date!
-
-
-
-
 
 True
 </code></pre>
@@ -217,16 +520,16 @@ True
 <p>Tweet has username, tag, and links, we will get rid of that. We also need to remove stopword because it not helping us to determine the sentiment so basically reduce the dimension of the model.</p>
 <pre><code class="language-python">def preprocess(text):
     text = text.lower()
-    ## hapus url
+    ## remove url
     text = re.sub(r'http\S+|www.\S+', '', text)
-    ## hapus username dan hastag
+    ## remove username dan hastag
     text = re.sub(r'@\w+', '', text)
     text = re.sub(r'#\w+', '', text)
-    ## hapus non ascii
+    ## remove non ascii
     text = text.encode('ascii', 'ignore').decode('utf-8')
-    ## hapus angka dan tanda baca
+    ## remove number and punctuation
     text = re.sub(r'[^a-zA-Z\s]', '', text)
-    ## hapus stop word
+    ## remove stop word
     tokens = word_tokenize(text)
     st = set(stopwords.words('indonesian'))
     tokens = [word for word in tokens if word not in st]
@@ -238,14 +541,14 @@ df['full_text'] = df['full_text'].apply(preprocess)
 X_train, X_test, y_train, y_test = train_test_split(df['full_text'], df['label'], stratify=df['label'], shuffle=True, random_state=0)
 </code></pre>
 <h2 id="next-we-do-vectorization-with-tfidf">Next we do vectorization with tfidf</h2>
-<p>It similar to bag of word but instead of count we do tf*idf which term frequency(simplest: count of that word in that document) * inverse document frequency(how much document have that word accross all documents). When the word is rare the weight is higher, tfidf suit our need to measure different word on how important that word is, so we can decide positive or negative sentiment better.  </p>
+<p>It similar to bag of word but instead of count we do tf*idf which term frequency(simplest: count of that word in that document) * inverse document frequency(how much document have that word accross all documents). When the word is rare the weight is higher, tfidf suit our need to measure different word on how important that word is, so we can decide positive or negative sentiment better. From the shape of our training data, we have 2302 word and </p>
 <pre><code class="language-python">from sklearn.feature_extraction.text import TfidfVectorizer
 tf = TfidfVectorizer()
 X_train = tf.fit_transform(X_train)
 X_test = tf.transform(X_test)
 X_train.shape
 </code></pre>
-<pre><code>(763, 4023)
+<pre><code>(505, 2302)
 </code></pre>
 <pre><code class="language-python">from sklearn.svm import SVC
 from sklearn.naive_bayes import MultinomialNB, BernoulliNB
@@ -253,21 +556,11 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import accuracy_score, classification_report
 </code></pre>
 <h2 id="comparing-model">Comparing model</h2>
-<p>we compare linear SVM (draw decision line counting only closer/support data), naive bayes (use bayes theorem with assumption all word independent and based on binomial/bernoulli distribution), dan Logistic regression (similar to bernoulli NB but instead using bayes theorem we use gradient descent to model the mean)
-- It looks like the sentiment is linearly separable and linear svm outperform for this random seed data
-- BernoulliNB offer more precision with recall trade off
-- Logistic regression easiest to interpret, we can select most positive/negative weight to see which word is mostly determine positve and negative sentiment.</p>
-<h3 id="based-on-logistic-regression">based on logistic regression</h3>
-<p>Top positive words:
-- ganjar: 1.9254
-- mahfud: 1.9136
-- mohmahfudmd: 1.4525
-- aniesbaswedan: 1.325</p>
-<p>Top negative words:
-- prabowo: -2.0228
-- bansos: -1.9204
-- apa: -1.4161
-- jokowi: -1.1784</p>
+<p>we will compare the first 3 models then compare them with deep learning after quick evaluation
+ - linear SVM (draw decision line counting only closer/support data)
+ - naive bayes (use bayes theorem with assumption all word independent and based on bernoulli/binomial distribution)
+ - Logistic regression (modelling logit of sentiment with maximum likelihood estimation)
+ - Deep Learning (neural network with hidden layer to extract feature and do logistic regression on the extracted feature) </p>
 <pre><code class="language-python">linsvm = SVC(kernel='linear')
 linsvm.fit(X_train, y_train)
 pred_linsvm = linsvm.predict(X_test)
@@ -275,13 +568,13 @@ print(classification_report(y_test, pred_linsvm), accuracy_score(y_test, pred_li
 </code></pre>
 <pre><code>              precision    recall  f1-score   support
 
-         0.0       0.86      0.88      0.87        85
-         1.0       0.88      0.86      0.87        84
+         0.0       0.85      0.88      0.87        85
+         1.0       0.88      0.85      0.86        84
 
-    accuracy                           0.87       169
-   macro avg       0.87      0.87      0.87       169
-weighted avg       0.87      0.87      0.87       169
- 0.8698224852071006
+    accuracy                           0.86       169
+   macro avg       0.86      0.86      0.86       169
+weighted avg       0.86      0.86      0.86       169
+ 0.863905325443787
 </code></pre>
 <pre><code class="language-python">bnb = BernoulliNB()
 bnb.fit(X_train, y_train)
@@ -290,13 +583,13 @@ print(classification_report(y_test, pred_bnb), accuracy_score(y_test, pred_bnb))
 </code></pre>
 <pre><code>              precision    recall  f1-score   support
 
-         0.0       0.91      0.68      0.78        85
-         1.0       0.74      0.93      0.83        84
+         0.0       0.95      0.66      0.78        85
+         1.0       0.74      0.96      0.84        84
 
-    accuracy                           0.80       169
-   macro avg       0.82      0.81      0.80       169
-weighted avg       0.83      0.80      0.80       169
- 0.8047337278106509
+    accuracy                           0.81       169
+   macro avg       0.84      0.81      0.81       169
+weighted avg       0.84      0.81      0.81       169
+ 0.8106508875739645
 </code></pre>
 <pre><code class="language-python">mnb = MultinomialNB()
 mnb.fit(X_train, y_train)
@@ -305,13 +598,13 @@ print(classification_report(y_test, pred_mnb), accuracy_score(y_test, pred_mnb))
 </code></pre>
 <pre><code>              precision    recall  f1-score   support
 
-         0.0       0.85      0.85      0.85        85
-         1.0       0.85      0.85      0.85        84
+         0.0       0.88      0.84      0.86        85
+         1.0       0.84      0.88      0.86        84
 
-    accuracy                           0.85       169
-   macro avg       0.85      0.85      0.85       169
-weighted avg       0.85      0.85      0.85       169
- 0.8461538461538461
+    accuracy                           0.86       169
+   macro avg       0.86      0.86      0.86       169
+weighted avg       0.86      0.86      0.86       169
+ 0.8579881656804734
 </code></pre>
 <pre><code class="language-python">lr = LogisticRegression()
 lr.fit(X_train, y_train)
@@ -320,19 +613,24 @@ print(classification_report(y_test, pred_lr), accuracy_score(y_test, pred_lr))
 </code></pre>
 <pre><code>              precision    recall  f1-score   support
 
-         0.0       0.83      0.65      0.73        84
-         1.0       0.85      0.94      0.89       171
+         0.0       0.85      0.86      0.85        85
+         1.0       0.86      0.85      0.85        84
 
-    accuracy                           0.84       255
-   macro avg       0.84      0.80      0.81       255
-weighted avg       0.84      0.84      0.84       255
- 0.8431372549019608
+    accuracy                           0.85       169
+   macro avg       0.85      0.85      0.85       169
+weighted avg       0.85      0.85      0.85       169
+ 0.8520710059171598
 </code></pre>
-<h2 id="most-sentiment-word">Most "sentiment" word</h2>
+<h2 id="what-we-got-before-continuing-to-deep-learning">What we got, before continuing to deep learning</h2>
+<ul>
+<li>From SVM results, it looks like the sentiment is linearly separable so maybe complex model like deep learning won't necessary</li>
+<li>Logistic regression offer balance between accuracy and interpretation, we can select most positive/negative weight to see which word is mostly determine positve and negative sentiment.</li>
+</ul>
+<h4 id="most-sentiment-word-according-to-logistic-regression-weight">Most "sentiment" word according to Logistic Regression weight</h4>
 <pre><code class="language-python">feature_names = tf.get_feature_names_out()
-coefficients = lr.coef_[0]  # hanya 1 baris untuk binary classification
+coefficients = lr.coef_[0] 
 
-# Top kata positif dan negatif
+# Top word for positif and negative sentiment
 top_pos = sorted(zip(coefficients, feature_names), reverse=True)[:10]
 top_neg = sorted(zip(coefficients, feature_names))[:10]
 
@@ -345,106 +643,237 @@ for coef, word in top_neg:
     print(f&quot;{word}: {coef:.4f}&quot;)
 </code></pre>
 <pre><code>Top positive words:
-ganjar: 1.9254
-mahfud: 1.9136
-mohmahfudmd: 1.4525
-aniesbaswedan: 1.3253
-co: 1.3187
-pak: 1.3028
-https: 1.3028
-ganjarmahfud2024: 1.2753
-ganjarpranowo: 1.2635
-yang: 1.2433
+ganjar: 2.2100
+ganjarmahfud: 1.9752
+pranowo: 1.6685
+mahfud: 1.3405
+malam: 1.1633
+terbaik: 1.0706
+banget: 1.0337
+indonesia: 0.9939
+keren: 0.9842
+rakyat: 0.9240
 
 Top negative words:
-prabowo: -2.0228
-bansos: -1.9204
-apa: -1.4161
-jokowi: -1.1784
-aja: -1.1065
-ga: -1.0893
-covid: -1.0787
-19: -1.0573
-bermasalah: -1.0573
-dikorupsi: -1.0573
+bansos: -1.7470
+yg: -1.2866
+ga: -1.2157
+jokowi: -1.0811
+prabowo: -0.9891
+covid: -0.9811
+aja: -0.9744
+bermasalah: -0.9656
+dikorupsi: -0.9656
+kaesang: -0.9656
 </code></pre>
+<h2 id="deep-learning">Deep learning</h2>
+<p>We will try deep learning using 1 hidden layer with 64 hidden unit, effectively try to reduce the dimension before doing logistic regression in the output layer. We will use the test set as validation.</p>
+<pre><code class="language-python">import pandas as pd
+import numpy as np
+from matplotlib.pyplot import subplots
+from ISLP import load_data
+import torch
+from torch import nn
+from torch.utils.data import TensorDataset, DataLoader
+from torch.optim import Adam, RMSprop
+from torchmetrics import MeanSquaredError, R2Score
+from torchmetrics.classification import BinaryAccuracy, MulticlassAccuracy
+from torchinfo import summary
+import pytorch_lightning as pl
+from pytorch_lightning.trainer import Trainer
+from pytorch_lightning.loggers import CSVLogger, TensorBoardLogger
+from pytorch_lightning.callbacks.early_stopping import EarlyStopping
+</code></pre>
+<pre><code class="language-python">class SentimentModel(pl.LightningModule):
+    def __init__(self, input_size):
+        super().__init__()
+        self.loss_fn = nn.BCEWithLogitsLoss()
+        self.train_accuracy = BinaryAccuracy()
+        self.val_accuracy = BinaryAccuracy()
+        self.test_accuracy = BinaryAccuracy()
+        self.learning_rate = 0.001
+        self.model = nn.Sequential(
+            nn.Linear(input_size, 64),
+            nn.ReLU(),
+            nn.Dropout(0.4),
+            nn.Linear(64, 1)
+        )
+
+    def forward(self, x):
+        return self.model(x).squeeze()
+
+    def _shared_step(self, batch, stage):
+        x, y = batch
+        preds = self(x)
+        loss = self.loss_fn(preds, y)
+
+        if stage == 'train':
+            metric = self.train_accuracy
+        elif stage == 'val':
+            metric = self.val_accuracy
+        else:
+            metric = self.test_accuracy
+        metric(preds, y.float())
+        self.log(f'{stage}_loss', loss, on_epoch=True, on_step=False)
+        self.log(f'{stage}_acc', metric, on_epoch=True, on_step=False, prog_bar=True)
+        return loss
+
+    def training_step(self, batch, batch_idx):
+        return self._shared_step(batch, 'train')
+
+    def validation_step(self, batch, batch_idx):
+        self._shared_step(batch, 'val')
+
+    def test_step(self, batch, batch_idx):
+        self._shared_step(batch, 'test')
+
+    def configure_optimizers(self):
+        return Adam(self.parameters(), lr=self.learning_rate)
+
+class SentimentDataModule(pl.LightningDataModule):
+    def __init__(self, train_td, test_td, batch_size=32, num_workers=8):
+        super().__init__()
+        self.train_td = train_td
+        self.test_td = test_td
+        self.batch_size = batch_size
+        self.num_workers=num_workers
+
+    def train_dataloader(self):
+        return DataLoader(self.train_td, batch_size=self.batch_size, num_workers=self.num_workers)
+
+    def val_dataloader(self):
+        return self.test_dataloader()
+
+    def test_dataloader(self):
+        return DataLoader(self.test_td, batch_size=self.batch_size, num_workers=self.num_workers)
+</code></pre>
+<pre><code class="language-python">X_train_t = torch.tensor(X_train.toarray().astype(np.float32))
+y_train_t = torch.tensor(y_train.to_numpy().astype(np.float32))
+X_test_t = torch.tensor(X_test.toarray().astype(np.float32))
+y_test_t = torch.tensor(y_test.to_numpy().astype(np.float32))
+
+train_ds = TensorDataset(X_train_t, y_train_t)
+test_ds = TensorDataset(X_test_t, y_test_t)
+</code></pre>
+<pre><code class="language-python">sentiment_model = SentimentModel(X_train_t.shape[1])
+sentiment_dm = SentimentDataModule(train_ds, test_ds)
+sentiment_logger = CSVLogger('logs', name='sentiment')
+sentiment_trainer = Trainer(
+    deterministic=True, 
+    max_epochs=30, 
+    logger=sentiment_logger,
+    callbacks=EarlyStopping(monitor='val_acc', patience=5, mode='min')
+)
+</code></pre>
+<pre><code>GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+HPU available: False, using: 0 HPUs
+</code></pre>
+<pre><code class="language-python">sentiment_trainer.fit(sentiment_model, sentiment_dm)
+</code></pre>
+<pre><code>  | Name           | Type              | Params | Mode 
+-------------------------------------------------------------
+0 | loss_fn        | BCEWithLogitsLoss | 0      | train
+1 | train_accuracy | BinaryAccuracy    | 0      | train
+2 | val_accuracy   | BinaryAccuracy    | 0      | train
+3 | test_accuracy  | BinaryAccuracy    | 0      | train
+4 | model          | Sequential        | 147 K  | train
+-------------------------------------------------------------
+147 K     Trainable params
+0         Non-trainable params
+147 K     Total params
+0.590     Total estimated model params size (MB)
+9         Modules in train mode
+0         Modules in eval mode
+
+/home/luqman/Lab/islp/venv/lib/python3.12/site-packages/pytorch_lightning/loops/fit_loop.py:310: The number of training batches (16) is smaller than the logging interval Trainer(log_every_n_steps=50). Set a lower value for log_every_n_steps if you want to see logs for the training epoch.
+</code></pre>
+<pre><code class="language-python">sentiment_trainer.test(sentiment_model, sentiment_dm)
+</code></pre>
+<pre><code>Testing: |                                                                                                    …
+
+────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+       Test metric             DataLoader 0
+────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+        test_acc            0.8461538553237915
+        test_loss           0.5141122341156006
+────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+[{'test_loss': 0.5141122341156006, 'test_acc': 0.8461538553237915}]
+</code></pre>
+<pre><code class="language-python">sentiment_results = pd.read_csv(sentiment_logger.experiment.metrics_file_path)
+
+fig, ax = subplots()
+sentiment_results.dropna(subset='train_acc').plot('epoch', 'train_acc', ax=ax)
+sentiment_results.dropna(subset='val_acc').plot('epoch', 'val_acc', ax=ax)
+best_val = sentiment_results['val_acc'].max()
+ax.axhline(best_val, linestyle='--')
+best_val
+</code></pre>
+<pre><code>0.8698225021362305
+</code></pre>
+<p><img alt="png" src="../Sentiment%20analysis%20with%20SVM%20and%20Binomial%20NB%20on%20Presidential%20Debate_files/Sentiment%20analysis%20with%20SVM%20and%20Binomial%20NB%20on%20Presidential%20Debate_28_1.png" /></p>
+<h2 id="conclusion">Conclusion</h2>
+<ul>
+<li>Deep learning outperform all model with with 87% accuracy at it's peak</li>
+<li>It hard to interpret deep learning so a simpler model like Logistic Regression should be enough for this task with 86% accuracy</li>
+<li>I personally prefer simpler model for this task especially SVM for more accuracy and Logistic regression for interpretability. We have'nt tune the hyperparameter yet and the simpler model might be better after tuning because it easier to train.</li>
+</ul>
 <pre><code class="language-python">
-</code></pre></div>
-            </div>
-        </div>
+</code></pre>
 
-        <footer class="col-md-12">
-            <hr>
-            <p>Documentation built with <a href="https://www.mkdocs.org/">MkDocs</a>.</p>
-        </footer>
-        <script src="../js/bootstrap.bundle.min.js"></script>
-        <script>
-            var base_url = "..",
-                shortcuts = {"help": 191, "next": 78, "previous": 80, "search": 83};
-        </script>
-        <script src="../js/base.js"></script>
-        <script src="../search/main.js"></script>
 
-        <div class="modal" id="mkdocs_search_modal" tabindex="-1" role="dialog" aria-labelledby="searchModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h4 class="modal-title" id="searchModalLabel">Search</h4>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
             </div>
-            <div class="modal-body">
-                <p>From here you can search these documents. Enter your search terms below.</p>
-                <form>
-                    <div class="form-group">
-                        <input type="search" class="form-control" placeholder="Search..." id="mkdocs-search-query" title="Type search term here">
-                    </div>
-                </form>
-                <div id="mkdocs-search-results" data-no-results-text="No results found"></div>
-            </div>
-            <div class="modal-footer">
-            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
         </div>
-    </div>
-</div><div class="modal" id="mkdocs_keyboard_modal" tabindex="-1" role="dialog" aria-labelledby="keyboardModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h4 class="modal-title" id="keyboardModalLabel">Keyboard Shortcuts</h4>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-              <table class="table">
-                <thead>
-                  <tr>
-                    <th style="width: 20%;">Keys</th>
-                    <th>Action</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <td class="help shortcut"><kbd>?</kbd></td>
-                    <td>Open this help</td>
-                  </tr>
-                  <tr>
-                    <td class="next shortcut"><kbd>n</kbd></td>
-                    <td>Next page</td>
-                  </tr>
-                  <tr>
-                    <td class="prev shortcut"><kbd>p</kbd></td>
-                    <td>Previous page</td>
-                  </tr>
-                  <tr>
-                    <td class="search shortcut"><kbd>s</kbd></td>
-                    <td>Search</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-            <div class="modal-footer">
-            </div>
-        </div>
-    </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
 </div>
-
-    </body>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      <script id="__config" type="application/json">{"base": "..", "features": ["navigation.instant", "navigation.tabs", "search.highlight", "content.code.annotate", "content.action.edit"], "search": "../assets/javascripts/workers/search.d50fe291.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.56ea9cef.min.js"></script>
+      
+    
+  </body>
 </html>
